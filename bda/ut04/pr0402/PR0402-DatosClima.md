@@ -67,7 +67,13 @@ import sys, csv
 #         print(f"{data[city_index]}\t{data[temp_index]}")
         
 #     i += 1
-    
+
+# sys.stdin.readline() lee la primera linea y la ignora
+
+# for line in sys.stdin:
+#    region, country, state, city, month, day, year, temp = line.strip().split(",")
+#    print(f"{city}, {temp})
+
 header = None
 
 for line in sys.stdin:
