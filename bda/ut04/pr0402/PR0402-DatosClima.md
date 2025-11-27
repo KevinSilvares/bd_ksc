@@ -425,7 +425,33 @@ if current_city:
 
 ## Ejercicio 2: Media histórica por país
 
-El `mapper` es exactamente el mismo del ejercicio 1. Cambia el `reducer`.
+
+```python
+%%writefile mapper_2.py
+#!/usr/bin/env python3
+
+import sys, csv
+
+header = None
+
+for line in sys.stdin:
+    if header is None:
+        # Evita la primera línea que actúa como cabecera
+        if "Country" in line and "AvgTemperature" in line:
+            header = line.strip().split(",")
+        continue
+
+    reader = csv.DictReader([line], fieldnames=header)
+    for row in reader:
+        try:
+            print(f"{row['Country']}\t{row['AvgTemperature']}")
+        except KeyError:
+            # La primera línea es la cabecera. Como no encuentra los datos salta esta excepción. Con esta línea la capturo y omito.
+            continue
+```
+
+    Writing mapper_2.py
+
 
 
 ```python
@@ -434,24 +460,24 @@ El `mapper` es exactamente el mismo del ejercicio 1. Cambia el `reducer`.
 
 import sys, math
 
-current_city = None
+current_country = None
 temps = []
 
 for line in sys.stdin:   
-    city, temp = line.strip().split("\t", 1)
+    country, temp = line.strip().split("\t", 1)
     temps.append(float(temp))
 
-    if current_city == city:
+    if current_country == country:
         temps.append(float(temp))
     else:
-        if current_city:
+        if current_country:
                 avg_temp = sum(temps) / len(temps)
-                print(f"{current_city}: {avg_temp}")
+                print(f"{current_country}: {avg_temp}")
         temps.clear()
-        current_city = city
+        current_country = country
         
-if current_city:
-    print(f"{current_city}: {avg_temp}")
+if current_country:
+    print(f"{current_country}: {avg_temp}")
 ```
 
     Overwriting reducer_avg_temp.py
@@ -462,49 +488,49 @@ if current_city:
 !hdfs dfs -rm -r /salida_avg_temp
 !hadoop jar \
 /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
--file mapper.py \
+-file mapper_2.py \
 -file reducer_avg_temp.py \
--mapper mapper.py \
+-mapper mapper_2.py \
 -reducer reducer_avg_temp.py \
 -input /datos_clima/city_temperature.csv \
 -output /salida_avg_temp
 ```
 
     Deleted /salida_avg_temp
-    2025-11-25 12:10:55,994 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
-    packageJobJar: [mapper.py, reducer_avg_temp.py, /tmp/hadoop-unjar7646296943622686048/] [] /tmp/streamjob1044830220720077824.jar tmpDir=null
-    2025-11-25 12:10:57,207 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.4:8032
-    2025-11-25 12:10:57,467 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.4:8032
-    2025-11-25 12:10:57,950 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764071839686_0004
-    2025-11-25 12:10:59,128 INFO mapred.FileInputFormat: Total input files to process : 1
-    2025-11-25 12:10:59,216 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.3:9866
-    2025-11-25 12:10:59,219 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.5:9866
-    2025-11-25 12:10:59,219 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.6:9866
-    2025-11-25 12:10:59,219 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.2:9866
-    2025-11-25 12:10:59,536 INFO mapreduce.JobSubmitter: number of splits:2
-    2025-11-25 12:10:59,829 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764071839686_0004
-    2025-11-25 12:10:59,830 INFO mapreduce.JobSubmitter: Executing with tokens: []
-    2025-11-25 12:11:00,096 INFO conf.Configuration: resource-types.xml not found
-    2025-11-25 12:11:00,097 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
-    2025-11-25 12:11:00,277 INFO impl.YarnClientImpl: Submitted application application_1764071839686_0004
-    2025-11-25 12:11:00,347 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764071839686_0004/
-    2025-11-25 12:11:00,351 INFO mapreduce.Job: Running job: job_1764071839686_0004
-    2025-11-25 12:11:09,780 INFO mapreduce.Job: Job job_1764071839686_0004 running in uber mode : false
-    2025-11-25 12:11:09,781 INFO mapreduce.Job:  map 0% reduce 0%
-    2025-11-25 12:11:19,145 INFO mapreduce.Job:  map 50% reduce 0%
-    2025-11-25 12:11:29,277 INFO mapreduce.Job:  map 72% reduce 0%
-    2025-11-25 12:11:34,386 INFO mapreduce.Job:  map 100% reduce 0%
-    2025-11-25 12:11:38,438 INFO mapreduce.Job:  map 100% reduce 100%
-    2025-11-25 12:11:39,466 INFO mapreduce.Job: Job job_1764071839686_0004 completed successfully
-    2025-11-25 12:11:39,614 INFO mapreduce.Job: Counters: 55
+    2025-11-26 11:39:30,250 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_2.py, reducer_avg_temp.py, /tmp/hadoop-unjar2709013200162500361/] [] /tmp/streamjob6865543215658514710.jar tmpDir=null
+    2025-11-26 11:39:31,406 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-11-26 11:39:31,607 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-11-26 11:39:31,910 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764156930469_0002
+    2025-11-26 11:39:32,513 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-11-26 11:39:32,543 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.4:9866
+    2025-11-26 11:39:32,544 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.2:9866
+    2025-11-26 11:39:32,544 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.3:9866
+    2025-11-26 11:39:32,544 INFO net.NetworkTopology: Adding a new node: /default-rack/172.19.0.5:9866
+    2025-11-26 11:39:32,666 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-11-26 11:39:32,889 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764156930469_0002
+    2025-11-26 11:39:32,890 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-11-26 11:39:33,593 INFO conf.Configuration: resource-types.xml not found
+    2025-11-26 11:39:33,594 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-11-26 11:39:33,832 INFO impl.YarnClientImpl: Submitted application application_1764156930469_0002
+    2025-11-26 11:39:33,995 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764156930469_0002/
+    2025-11-26 11:39:34,006 INFO mapreduce.Job: Running job: job_1764156930469_0002
+    2025-11-26 11:39:42,221 INFO mapreduce.Job: Job job_1764156930469_0002 running in uber mode : false
+    2025-11-26 11:39:42,224 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-11-26 11:39:51,460 INFO mapreduce.Job:  map 50% reduce 0%
+    2025-11-26 11:40:00,585 INFO mapreduce.Job:  map 72% reduce 0%
+    2025-11-26 11:40:05,663 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-11-26 11:40:08,707 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-11-26 11:40:09,733 INFO mapreduce.Job: Job job_1764156930469_0002 completed successfully
+    2025-11-26 11:40:09,850 INFO mapreduce.Job: Counters: 55
     	File System Counters
-    		FILE: Number of bytes read=23851842
-    		FILE: Number of bytes written=48646184
+    		FILE: Number of bytes read=23753461
+    		FILE: Number of bytes written=48449443
     		FILE: Number of read operations=0
     		FILE: Number of large read operations=0
     		FILE: Number of write operations=0
     		HDFS: Number of bytes read=140605138
-    		HDFS: Number of bytes written=5092
+    		HDFS: Number of bytes written=3642
     		HDFS: Number of read operations=11
     		HDFS: Number of large read operations=0
     		HDFS: Number of write operations=2
@@ -514,39 +540,39 @@ if current_city:
     		Launched map tasks=3
     		Launched reduce tasks=1
     		Data-local map tasks=3
-    		Total time spent by all maps in occupied slots (ms)=33587
-    		Total time spent by all reduces in occupied slots (ms)=16544
-    		Total time spent by all map tasks (ms)=33587
-    		Total time spent by all reduce tasks (ms)=16544
-    		Total vcore-milliseconds taken by all map tasks=33587
-    		Total vcore-milliseconds taken by all reduce tasks=16544
-    		Total megabyte-milliseconds taken by all map tasks=34393088
-    		Total megabyte-milliseconds taken by all reduce tasks=16941056
+    		Total time spent by all maps in occupied slots (ms)=30124
+    		Total time spent by all reduces in occupied slots (ms)=15442
+    		Total time spent by all map tasks (ms)=30124
+    		Total time spent by all reduce tasks (ms)=15442
+    		Total vcore-milliseconds taken by all map tasks=30124
+    		Total vcore-milliseconds taken by all reduce tasks=15442
+    		Total megabyte-milliseconds taken by all map tasks=30846976
+    		Total megabyte-milliseconds taken by all reduce tasks=15812608
     	Map-Reduce Framework
     		Map input records=2906328
     		Map output records=1541840
-    		Map output bytes=20768156
-    		Map output materialized bytes=23851848
+    		Map output bytes=20669775
+    		Map output materialized bytes=23753467
     		Input split bytes=210
     		Combine input records=0
     		Combine output records=0
-    		Reduce input groups=178
-    		Reduce shuffle bytes=23851848
+    		Reduce input groups=125
+    		Reduce shuffle bytes=23753467
     		Reduce input records=1541840
-    		Reduce output records=178
+    		Reduce output records=125
     		Spilled Records=3083680
     		Shuffled Maps =2
     		Failed Shuffles=0
     		Merged Map outputs=2
-    		GC time elapsed (ms)=288
-    		CPU time spent (ms)=19760
-    		Physical memory (bytes) snapshot=929406976
-    		Virtual memory (bytes) snapshot=7635058688
-    		Total committed heap usage (bytes)=890765312
-    		Peak Map Physical memory (bytes)=356560896
-    		Peak Map Virtual memory (bytes)=2555604992
-    		Peak Reduce Physical memory (bytes)=271867904
-    		Peak Reduce Virtual memory (bytes)=2552733696
+    		GC time elapsed (ms)=365
+    		CPU time spent (ms)=19280
+    		Physical memory (bytes) snapshot=956522496
+    		Virtual memory (bytes) snapshot=7631822848
+    		Total committed heap usage (bytes)=863502336
+    		Peak Map Physical memory (bytes)=358526976
+    		Peak Map Virtual memory (bytes)=2556022784
+    		Peak Reduce Physical memory (bytes)=281493504
+    		Peak Reduce Virtual memory (bytes)=2550157312
     	Shuffle Errors
     		BAD_ID=0
     		CONNECTION=0
@@ -557,8 +583,8 @@ if current_city:
     	File Input Format Counters 
     		Bytes Read=140604928
     	File Output Format Counters 
-    		Bytes Written=5092
-    2025-11-25 12:11:39,614 INFO streaming.StreamJob: Output directory: /salida_avg_temp
+    		Bytes Written=3642
+    2025-11-26 11:40:09,850 INFO streaming.StreamJob: Output directory: /salida_avg_temp
 
 
 
@@ -566,189 +592,136 @@ if current_city:
 !hdfs dfs -cat /salida_avg_temp/part-00000
 ```
 
-    Abidjan: 75.1398197614812	
-    Abu Dhabi: 82.19085316496732	
-    Addis Ababa: 25.452670934423686	
-    Algiers: 63.75590092277833	
-    Almaty: 49.32025473581944	
-    Amman: 64.16002374399635	
-    Amsterdam: 50.8167880848305	
-    Anchorage: 37.75395865939927	
-    Ankara: 50.90550429010864	
-    Antananarivo: 63.44672170956882	
-    Ashabad: 62.04525929523497	
-    Athens: 59.63615484067216	
-    Auckland: 58.91440828881299	
-    Bangkok: 72.46335095567325	
-    Bangui: 67.01901138632614	
-    Banjul: 59.664577353406244	
-    Barcelona: 61.26888996816112	
-    Beijing: 54.71827748097774	
-    Beirut: 69.39622794236656	
-    Belfast: 49.65008364362405	
-    Belgrade: 54.03263720252593	
-    Belize City: 73.47476383265831	
-    Bern: 49.034569100426225	
-    Bilbao: 58.6960822405701	
-    Birmingham: 63.29183442171747	
-    Bishkek: 51.377596194889335	
-    Bissau: 2.386007231126249	
-    Bogota: 55.24561545518355	
-    Bombay (Mumbai): 81.52145054233492	
-    Bonn: -46.83535514764556	
-    Bordeaux: 56.45363445038021	
-    Brasilia: 70.36465921968572	
-    Bratislava: 51.446527440505164	
-    Brazzaville: 69.3170597441849	
-    Bridgetown: 77.00247614587573	
-    Brisbane: 68.06960768442102	
-    Brussels: 51.057811235227604	
-    Bucharest: 52.36715773568613	
-    Budapest: 51.09863472019858	
-    Buenos Aires: 62.295601964275995	
-    Bujumbura: -65.37594936708857	
-    Cairo: 71.95545302466141	
-    Calcutta: 78.86903027359499	
-    Calgary: 39.3858933727727	
-    Canberra: 55.57895958124223	
-    Capetown: 61.94134693216763	
-    Caracas: 78.32395164337089	
-    Chengdu: 62.60739301710626	
-    Chennai (Madras): 82.84672710593036	
-    Colombo: 74.24141708488523	
-    Conakry: 49.38634720198594	
-    Copenhagen: 46.9607198748046	
-    Cotonou: 76.15079596352064	
-    Dakar: 75.55632723544367	
-    Damascus: 62.80520805224311	
-    Dar Es Salaam: 65.30325964176166	
-    Delhi: 75.79967078633477	
-    Dhahran: 79.6293508175487	
-    Dhaka: 10.104397968844177	
-    Doha: 82.23735362365781	
-    Dubai: 82.97030381522897	
-    Dublin: 49.06745453564273	
-    Dusanbe: 35.152252981490605	
-    Edmonton: 38.77939963491304	
-    Fairbanks: 28.293475093097218	
-    Flagstaff: 46.107835455435904	
-    Frankfurt: -13.699601015596624	
-    Freetown: -9.800708705806628	
-    Geneva: 51.373028978468426	
-    Georgetown: -22.09392832461251	
-    Guadalajara: 2.62162572212162	
-    Guangzhou: 72.82867087583037	
-    Guatemala City: 56.91117586746527	
-    Guayaquil: 73.71999892072722	
-    Halifax: 43.81485810858405	
-    Hamburg: -13.372970806333084	
-    Hamilton: 66.9698380743983	
-    Hanoi: 74.73761804543759	
-    Havana: 72.63858692718797	
-    Helsinki: 42.24660838594808	
-    Hong Kong: 75.06204738006608	
-    Huntsville: 61.48635112526268	
-    Islamabad: 65.36522208430021	
-    Istanbul: 59.45605741730101	
-    Jakarta: 35.98386313346622	
-    Juneau: 42.064606832532895	
-    Kampala: 44.14160505154113	
-    Karachi: 77.93611635814196	
-    Katmandu: 49.48979437638268	
-    Kiev: 47.66447034698616	
-    Kuala Lumpur: 78.95348335222063	
-    Kuwait: 79.49092871404696	
-    La Paz: 44.868593168204484	
-    Lagos: 38.57111111111111	
-    Libreville: 70.38777999676144	
-    Lilongwe: -20.564637681159496	
-    Lima: 66.6343997902054	
-    Lisbon: 61.8580756570078	
-    Lome: 71.56734660838525	
-    London: 52.36704980842909	
-    Lusaka: 55.899698340875176	
-    Madrid: 58.44305757919141	
-    Managua: 71.85170642003348	
-    Manama: 80.63445577680636	
-    Manila: 81.54105552857351	
-    Maputo: 62.78369641224243	
-    Melbourne: 64.71816955372039	
-    Mexico City: 62.050288736574736	
-    Milan: 54.19300631374398	
-    Minsk: 41.824914988935	
-    Mobile: 66.72217065141122	
-    Monterrey: 74.80798208214134	
-    Montgomery: 64.92013060607692	
-    Montreal: 45.216892778993326	
-    Montvideo: 60.975937618045315	
-    Moscow: 41.92463979277959	
-    Munich: 46.13699326851174	
-    Muscat: 21.905181405259988	
-    Nairobi: 23.449917677907116	
-    Nassau: 76.57340385341892	
-    Niamey: 81.94105013221126	
-    Nicosia: 23.80424666017873	
-    Nouakchott: 73.41321158765116	
-    Osaka: 62.03561599481979	
-    Oslo: 40.92692487167542	
-    Ottawa: 43.94439124005372	
-    Panama City: 79.56894932815248	
-    Paramaribo: 47.53205287294291	
-    Paris: 52.93898872160177	
-    Perth: 62.25038583994329	
-    Phoenix: 75.15129256840626	
-    Port au Prince: 16.678403021311002	
-    Prague: 47.605407155577154	
-    Pristina: 42.38673573617391	
-    Pyongyang: 48.213172521720374	
-    Quebec: 39.61772356846013	
-    Quito: 42.43465258248211	
-    Rabat: 62.734202147752626	
-    Rangoon: 71.50988613674376	
-    Regina: 36.809799794938414	
-    Reykjavik: 41.08413469321719	
-    Riga: 44.13847067076791	
-    Rio de Janeiro: 73.19601165740235	
-    Riyadh: 78.67243537855477	
-    Rome: 60.22447250553093	
-    San Jose: 70.37603475257666	
-    Santo Domingo: 65.21391872200354	
-    Sao Paulo: 66.83197344989514	
-    Sapporo: 44.45750364254471	
-    Seoul: 52.881128919108626	
-    Shanghai: 62.87241379310355	
-    Shenyang: 46.89235252846858	
-    Singapore: 81.65329987588356	
-    Skopje: 54.00601219709583	
-    Sofia: 45.20407965031587	
-    Stockholm: 45.094058604500695	
-    Sydney: 57.55066645081227	
-    Taipei: 69.3311100318392	
-    Tashkent: 58.8115104419626	
-    Tbilisi: 46.5103597944031	
-    Tegucigalpa: 68.53163149657307	
-    Tel Aviv: 54.01753043853038	
-    Tirana: 33.17089741514245	
-    Tokyo: 61.06175597647178	
-    Toronto: 47.60209140201386	
-    Tucson: 69.989357223811	
-    Tunis: 66.47656359613654	
-    Ulan-bator: 29.699552101883206	
-    Vancouver: 50.378691641433214	
-    Vienna: 51.04832442933429	
-    Vientiane: 79.96494522691792	
-    Warsaw: 47.77905131941073	
-    Windhoek: 57.98774485996466	
-    Winnipeg: 37.56491092176575	
-    Yerevan: 53.70353433576219	
-    Yuma: 68.52801696440055	
-    Zagreb: 46.9286739705324	
-    Zurich: 46.9286739705324	
+    Albania: 33.17078409152236	
+    Algeria: 63.75446009389678	
+    Argentina: 62.306097890022	
+    Australia: 61.63451904294222	
+    Austria: 51.04746101127842	
+    Bahamas: 76.57320416644127	
+    Bahrain: 80.63413199503516	
+    Bangladesh: 10.104148377657351	
+    Barbados: 77.0008370895045	
+    Belarus: 41.820575376477436	
+    Belgium: 51.05730397711927	
+    Belize: 73.47787314439928	
+    Benin: 76.15142194161199	
+    Bermuda: 66.96951422319485	
+    Bolivia: 44.868075117370665	
+    Brazil: 70.13138164876939	
+    Bulgaria: 45.193049484647275	
+    Burundi: -65.37823885525572	
+    Canada: 42.00553845739333	
+    Central African Republic: 67.01835303005792	
+    China: 59.9834033046609	
+    Colombia: 55.24527008796091	
+    Congo: 69.31675211830093	
+    Costa Rica: 70.37446980735005	
+    Croatia: 46.92855523773532	
+    Cuba: 72.6312408916711	
+    Cyprus: 23.80081394320081	
+    Czech Republic: 47.60424693756433	
+    Denmark: 46.96123252927531	
+    Dominican Republic: 65.20562361703305	
+    Egypt: 71.97248394582104	
+    Equador: 59.9441514904405	
+    Ethiopia: 25.452305126687847	
+    Finland: 42.245993200582475	
+    France: 54.696972722121636	
+    Gabon: 70.39731742861733	
+    Gambia: 59.66214047214608	
+    Georgia: 46.50163335237006	
+    Germany: 6.427018138530741	
+    Greece: 59.63568332192521	
+    Guatemala: 56.91197452916761	
+    Guinea: 49.38811181263805	
+    Guinea-Bissau: 2.377659057795128	
+    Guyana: -22.075891006022303	
+    Haiti: 16.680798489344667	
+    Honduras: 68.53243024448228	
+    Hong Kong: 75.06083859478738	
+    Hungary: 51.098068102099184	
+    Iceland: 41.083319842426256	
+    India: 79.76241079258192	
+    Indonesia: 35.98437044632726	
+    Ireland: 49.06760023743983	
+    Israel: 54.01610817799786	
+    Italy: 57.210468661467864	
+    Ivory Coast: 75.1371917327721	
+    Japan: 55.854510297688456	
+    Jordan: 64.15679671901098	
+    Kazakhstan: 49.32423768147207	
+    Kenya: 23.44728946887003	
+    Kuwait: 79.49555879337352	
+    Kyrgyzstan: 51.37347399231673	
+    Laos: 79.9650207759967	
+    Latvia: 44.13876207436176	
+    Lebanon: 69.39783066213344	
+    Macedonia: 54.00916401316807	
+    Madagascar: 63.43595056931731	
+    Malawi: -20.56312692138777	
+    Malaysia: 78.95306783228116	
+    Mauritania: 73.41447266670608	
+    Mexico: 47.614733287820485	
+    Mongolia: 29.69222923749382	
+    Morocco: 62.734310075009645	
+    Mozambique: 62.78375558065736	
+    Myanmar (Burma): 71.51080351842803	
+    Namibia: 57.988851114349266	
+    Nepal: 49.49138107830914	
+    New Zealand: 58.91453780152138	
+    Nicaragua: 71.85044080263998	
+    Nigeria: 61.99105951583332	
+    North Korea: 48.20776536614334	
+    Norway: 40.92372582568583	
+    Oman: 21.884517467616206	
+    Pakistan: 71.65138562832199	
+    Panama: 79.57843073768316	
+    Peru: 66.6331803579627	
+    Philippines: 81.53986832874624	
+    Poland: 47.77873293400247	
+    Portugal: 61.858302304247076	
+    Qatar: 82.23422912956791	
+    Romania: 52.369305488100984	
+    Russia: 44.963739342752724	
+    Saudi Arabia: 79.1509241022049	
+    Senegal: 75.55493497382865	
+    Serbia-Montenegro: 42.372712680578175	
+    Sierra Leone: -9.798171861157927	
+    Singapore: 81.65215045059597	
+    Slovakia: 51.447736225784105	
+    South Africa: 61.93867033619357	
+    South Korea: 52.87893799579033	
+    Spain: 59.46887669754426	
+    Sri Lanka: 74.24080189951947	
+    Suriname: 47.511006204478036	
+    Sweden: 45.095834007878445	
+    Switzerland: 49.82893245795491	
+    Syria: 62.80551028118052	
+    Taiwan: 69.33068371917317	
+    Tajikistan: 35.146403324159515	
+    Tanzania: 65.31367866171797	
+    Thailand: 72.49011793411972	
+    The Netherlands: 50.81994495709885	
+    Togo: 71.56815066645099	
+    Tunisia: 66.47918622848182	
+    Turkey: 55.178061678763264	
+    Turkmenistan: 62.04813016027209	
+    US: 56.72507663773526	
+    Uganda: 44.13916563225247	
+    Ukraine: 47.6664885866929	
+    United Arab Emirates: 82.58118069233515	
+    United Kingdom: 51.00741440250401	
+    Uruguay: 60.97469645458976	
+    Uzbekistan: 58.80487291565538	
+    Venezuela: 78.3240056128237	
+    Vietnam: 74.74076412497928	
+    Yugoslavia: 54.030408504667776	
+    Zambia: 54.030408504667776	
 
 
 
 ```python
-!cat test_city_temperature.csv | python3 mapper.py | sort | python3 reducer_avg_temp.py
+!cat test_city_temperature.csv | python3 mapper_2.py | sort | python3 reducer_avg_temp.py
 ```
 
 ## Ejercicio 3: Conteo de días calurosos por ciudad
