@@ -122,3 +122,8 @@ finally:
     [INFO] Fichero coin_XRP.csv procesado.
     --- Conexión cerrada ---
 
+### Capturas
+
+![]({A72F809E-2429-492E-876A-69DF10F22296}.png)
+
+![alt text]({1FBF4C33-4428-4D51-9461-FF4BE796B196}.png)
