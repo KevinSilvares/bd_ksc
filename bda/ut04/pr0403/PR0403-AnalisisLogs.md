@@ -12,10 +12,12 @@
 
 
 ```python
-!head -n 100 > test_logfiles.log
+!head -n 100 logfiles.log > test_logfiles.log
 ```
 
 ## 1. Estadísticas básicas
+
+### Contador de códigos
 
 
 ```python
@@ -37,13 +39,13 @@ for line in sys.stdin:
 !cat test_logfiles.log | python3 mapper_code_count.py | sort | python3 reducer_code_count.py
 ```
 
-    200: 22
-    303: 20
-    304: 25
-    403: 13
-    404: 19
-    500: 18
-    502: 21
+    200: 14
+    303: 14
+    304: 16
+    403: 7
+    404: 11
+    500: 14
+    502: 17
 
 
 
@@ -77,5 +79,582 @@ if current_code:
 
 
 ```python
-
+!hdfs dfs -rm -r /analisis_logs/salida
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_code_count.py \
+-file reducer_code_count.py \
+-mapper mapper_code_count.py \
+-reducer reducer_code_count.py \
+-input /analisis_logs/logfiles.log \
+-output /analisis_logs/salida
 ```
+
+    rm: `/analisis_logs/salida': No such file or directory
+    2025-12-04 11:18:33,736 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_code_count.py, reducer_code_count.py, /tmp/hadoop-unjar8009058023898264362/] [] /tmp/streamjob6396366509413446861.jar tmpDir=null
+    2025-12-04 11:18:35,011 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-04 11:18:35,419 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-04 11:18:36,112 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764846567674_0001
+    2025-12-04 11:18:37,945 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-04 11:18:38,132 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-04 11:18:38,427 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764846567674_0001
+    2025-12-04 11:18:38,427 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-04 11:18:38,910 INFO conf.Configuration: resource-types.xml not found
+    2025-12-04 11:18:38,911 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-04 11:18:40,852 INFO impl.YarnClientImpl: Submitted application application_1764846567674_0001
+    2025-12-04 11:18:40,952 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764846567674_0001/
+    2025-12-04 11:18:40,955 INFO mapreduce.Job: Running job: job_1764846567674_0001
+    2025-12-04 11:19:01,963 INFO mapreduce.Job: Job job_1764846567674_0001 running in uber mode : false
+    2025-12-04 11:19:01,966 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-04 11:19:23,998 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-04 11:19:34,104 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-04 11:19:34,113 INFO mapreduce.Job: Job job_1764846567674_0001 completed successfully
+    2025-12-04 11:19:34,231 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=1697990
+    		FILE: Number of bytes written=4338630
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=51384518
+    		HDFS: Number of bytes written=84
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=34650
+    		Total time spent by all reduces in occupied slots (ms)=6612
+    		Total time spent by all map tasks (ms)=34650
+    		Total time spent by all reduce tasks (ms)=6612
+    		Total vcore-milliseconds taken by all map tasks=34650
+    		Total vcore-milliseconds taken by all reduce tasks=6612
+    		Total megabyte-milliseconds taken by all map tasks=35481600
+    		Total megabyte-milliseconds taken by all reduce tasks=6770688
+    	Map-Reduce Framework
+    		Map input records=212248
+    		Map output records=212248
+    		Map output bytes=1273488
+    		Map output materialized bytes=1697996
+    		Input split bytes=198
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=7
+    		Reduce shuffle bytes=1697996
+    		Reduce input records=212248
+    		Reduce output records=7
+    		Spilled Records=424496
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=1410
+    		CPU time spent (ms)=8170
+    		Physical memory (bytes) snapshot=935579648
+    		Virtual memory (bytes) snapshot=7628521472
+    		Total committed heap usage (bytes)=751828992
+    		Peak Map Physical memory (bytes)=445526016
+    		Peak Map Virtual memory (bytes)=2541789184
+    		Peak Reduce Physical memory (bytes)=260464640
+    		Peak Reduce Virtual memory (bytes)=2549645312
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=51384320
+    	File Output Format Counters 
+    		Bytes Written=84
+    2025-12-04 11:19:34,232 INFO streaming.StreamJob: Output directory: /analisis_logs/salida
+
+
+
+```python
+!hdfs dfs -cat /analisis_logs/salida/part-00000
+```
+
+    200: 30407	
+    303: 30078	
+    304: 30373	
+    403: 30501	
+    404: 30024	
+    500: 30179	
+    502: 30679	
+
+
+### Tráfico total por IP
+
+
+```python
+%%writefile mapper_ip_traffic.py
+#!/usr/bin/env python3
+
+import sys
+
+for line in sys.stdin:
+    words = line.strip().split()
+    print(f"{words[0]}\t{words[9]}")
+```
+
+    Overwriting mapper_ip_traffic.py
+
+
+
+```python
+!cat test_logfiles.log | python3 mapper_ip_traffic.py | sort | python3 reducer_ip_traffic.py | python3 mapper_ip_traffic_sort.py | sort | python3 reducer_ip_traffic_sort.py
+```
+
+    238.217.83.154 05152.0
+
+
+
+```python
+%%writefile reducer_ip_traffic.py
+#!/usr/bin/env python3
+
+import sys
+
+current_ip = None
+current_byte_count = 0
+
+for line in sys.stdin:
+    ip, byte_count = line.strip().split("\t")
+    
+    try:
+        byte_count = float(byte_count)
+    except ValueError:
+        # Si encuentra un "-" se cuenta como 0
+        byte_count = 0
+    
+    if current_ip == ip:
+        current_byte_count += byte_count
+    else:
+        if current_ip:
+            print(f"{current_ip}\t{current_byte_count}")
+            
+        current_ip = ip
+        current_byte_count = byte_count
+
+print(f"{current_ip}\t{current_byte_count}")
+```
+
+    Overwriting reducer_ip_traffic.py
+
+
+
+```python
+%%writefile mapper_ip_traffic_sort.py
+#!/usr/bin/env python3
+
+import sys
+
+for line in sys.stdin:
+    ip, byte_count = line.strip().split("\t")
+    byte_count = byte_count.zfill(7)
+    
+    print(f"{byte_count}\t{ip}")
+```
+
+    Overwriting mapper_ip_traffic_sort.py
+
+
+
+```python
+%%writefile reducer_ip_traffic_sort.py
+#!/usr/bin/env python3
+
+import sys
+
+data = None
+
+# Guardo cada entrada e imprimo la última de todas. Los datos ya están ordenados, así que es la ip con más bytes de consumo
+for line in sys.stdin:
+    data = line.strip().split("\t")
+    
+print(data[1], data[0])
+```
+
+    Overwriting reducer_ip_traffic_sort.py
+
+
+
+```python
+!hdfs dfs -rm -r /analisis_logs/salida/ip_bytes
+
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_ip_traffic.py \
+-file reducer_ip_traffic.py \
+-mapper mapper_ip_traffic.py \
+-reducer reducer_ip_traffic.py \
+-input /analisis_logs/logfiles.log \
+-output /analisis_logs/salida/ip_bytes
+
+!hdfs dfs -rm -r /analisis_logs/salida/ip_bytes/max
+
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_ip_traffic_sort.py \
+-file reducer_ip_traffic_sort.py \
+-mapper mapper_ip_traffic_sort.py \
+-reducer reducer_ip_traffic_sort.py \
+-input /analisis_logs/salida/ip_bytes/part-00000 \
+-output /analisis_logs/salida/ip_bytes/max
+```
+
+    Deleted /analisis_logs/salida/ip_bytes
+    2025-12-04 12:17:29,400 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_ip_traffic.py, reducer_ip_traffic.py, /tmp/hadoop-unjar5439262644866635278/] [] /tmp/streamjob1352813603275872425.jar tmpDir=null
+    2025-12-04 12:17:30,849 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:17:31,061 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:17:31,561 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764850610596_0001
+    2025-12-04 12:17:34,376 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-04 12:17:34,773 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-04 12:17:35,874 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764850610596_0001
+    2025-12-04 12:17:35,875 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-04 12:17:36,241 INFO conf.Configuration: resource-types.xml not found
+    2025-12-04 12:17:36,242 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-04 12:17:37,137 INFO impl.YarnClientImpl: Submitted application application_1764850610596_0001
+    2025-12-04 12:17:37,440 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764850610596_0001/
+    2025-12-04 12:17:37,443 INFO mapreduce.Job: Running job: job_1764850610596_0001
+    2025-12-04 12:17:50,865 INFO mapreduce.Job: Job job_1764850610596_0001 running in uber mode : false
+    2025-12-04 12:17:50,866 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-04 12:18:11,397 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-04 12:18:18,473 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-04 12:18:18,485 INFO mapreduce.Job: Job job_1764850610596_0001 completed successfully
+    2025-12-04 12:18:18,605 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=4516733
+    		FILE: Number of bytes written=9976143
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=51384518
+    		HDFS: Number of bytes written=4516625
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=30366
+    		Total time spent by all reduces in occupied slots (ms)=4660
+    		Total time spent by all map tasks (ms)=30366
+    		Total time spent by all reduce tasks (ms)=4660
+    		Total vcore-milliseconds taken by all map tasks=30366
+    		Total vcore-milliseconds taken by all reduce tasks=4660
+    		Total megabyte-milliseconds taken by all map tasks=31094784
+    		Total megabyte-milliseconds taken by all reduce tasks=4771840
+    	Map-Reduce Framework
+    		Map input records=212248
+    		Map output records=212248
+    		Map output bytes=4092231
+    		Map output materialized bytes=4516739
+    		Input split bytes=198
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=212243
+    		Reduce shuffle bytes=4516739
+    		Reduce input records=212248
+    		Reduce output records=212243
+    		Spilled Records=424496
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=705
+    		CPU time spent (ms)=6650
+    		Physical memory (bytes) snapshot=864464896
+    		Virtual memory (bytes) snapshot=7645073408
+    		Total committed heap usage (bytes)=729808896
+    		Peak Map Physical memory (bytes)=327462912
+    		Peak Map Virtual memory (bytes)=2547224576
+    		Peak Reduce Physical memory (bytes)=215785472
+    		Peak Reduce Virtual memory (bytes)=2552147968
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=51384320
+    	File Output Format Counters 
+    		Bytes Written=4516625
+    2025-12-04 12:18:18,605 INFO streaming.StreamJob: Output directory: /analisis_logs/salida/ip_bytes
+    rm: `/analisis_logs/salida/ip_bytes/max': No such file or directory
+    2025-12-04 12:18:22,805 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_ip_traffic_sort.py, reducer_ip_traffic_sort.py, /tmp/hadoop-unjar7864900794245529448/] [] /tmp/streamjob3296155435192179724.jar tmpDir=null
+    2025-12-04 12:18:24,250 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:18:24,580 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:18:25,020 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764850610596_0002
+    2025-12-04 12:18:25,834 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-04 12:18:26,033 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-04 12:18:26,246 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764850610596_0002
+    2025-12-04 12:18:26,247 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-04 12:18:26,497 INFO conf.Configuration: resource-types.xml not found
+    2025-12-04 12:18:26,498 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-04 12:18:26,620 INFO impl.YarnClientImpl: Submitted application application_1764850610596_0002
+    2025-12-04 12:18:26,684 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764850610596_0002/
+    2025-12-04 12:18:26,687 INFO mapreduce.Job: Running job: job_1764850610596_0002
+    2025-12-04 12:18:45,178 INFO mapreduce.Job: Job job_1764850610596_0002 running in uber mode : false
+    2025-12-04 12:18:45,184 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-04 12:18:56,778 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-04 12:19:14,972 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-04 12:19:15,001 INFO mapreduce.Job: Job job_1764850610596_0002 completed successfully
+    2025-12-04 12:19:15,126 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=5153356
+    		FILE: Number of bytes written=11249571
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=4520947
+    		HDFS: Number of bytes written=24
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=19586
+    		Total time spent by all reduces in occupied slots (ms)=12523
+    		Total time spent by all map tasks (ms)=19586
+    		Total time spent by all reduce tasks (ms)=12523
+    		Total vcore-milliseconds taken by all map tasks=19586
+    		Total vcore-milliseconds taken by all reduce tasks=12523
+    		Total megabyte-milliseconds taken by all map tasks=20056064
+    		Total megabyte-milliseconds taken by all reduce tasks=12823552
+    	Map-Reduce Framework
+    		Map input records=212243
+    		Map output records=212243
+    		Map output bytes=4728864
+    		Map output materialized bytes=5153362
+    		Input split bytes=226
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=414
+    		Reduce shuffle bytes=5153362
+    		Reduce input records=212243
+    		Reduce output records=1
+    		Spilled Records=424486
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=579
+    		CPU time spent (ms)=8840
+    		Physical memory (bytes) snapshot=897765376
+    		Virtual memory (bytes) snapshot=7634255872
+    		Total committed heap usage (bytes)=793247744
+    		Peak Map Physical memory (bytes)=327983104
+    		Peak Map Virtual memory (bytes)=2542813184
+    		Peak Reduce Physical memory (bytes)=246726656
+    		Peak Reduce Virtual memory (bytes)=2549739520
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=4520721
+    	File Output Format Counters 
+    		Bytes Written=24
+    2025-12-04 12:19:15,126 INFO streaming.StreamJob: Output directory: /analisis_logs/salida/ip_bytes/max
+
+
+
+```python
+!hdfs dfs -cat /analisis_logs/salida/ip_bytes/max/part-00000
+```
+
+    65.235.103.102 10099.0	
+
+
+## 2. Análisis de comportamiento
+
+### URLs más populares
+
+
+```python
+%%writefile mapper_url.py
+#!/usr/bin/env python3
+
+import sys
+
+for line in sys.stdin:
+    words = line.strip().split()
+    print(f"{words[5]}{words[6]}{words[7]}\t1")
+```
+
+    Overwriting mapper_url.py
+
+
+
+```python
+!cat test_logfiles.log | python3 mapper_url.py | sort | python3 reducer_url.py
+```
+
+
+```python
+%%writefile reducer_url.py
+#!/usr/bin/env python3
+
+import sys
+
+current_url = None
+current_count = 0
+
+for line in sys.stdin:
+    url, count = line.strip().split("\t")
+
+    if current_url == url:
+        current_count += 1
+    else:
+        if current_url:
+            print(f"{current_url}: {current_count}")
+        
+        current_url = url
+        current_count = 0
+
+print(f"{current_url}: {current_count}")
+```
+
+    Overwriting reducer_url.py
+
+
+
+```python
+!hdfs dfs -rm -r /analisis_logs/salida/urls
+
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_url.py \
+-file reducer_url.py \
+-mapper mapper_url.py \
+-reducer reducer_url.py \
+-input /analisis_logs/logfiles.log \
+-output /analisis_logs/salida/urls
+```
+
+    rm: `/analisis_logs/salida/urls': No such file or directory
+    2025-12-04 12:31:51,297 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_url.py, reducer_url.py, /tmp/hadoop-unjar6238276547948537226/] [] /tmp/streamjob8488414693736229156.jar tmpDir=null
+    2025-12-04 12:31:52,574 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:31:52,825 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.6:8032
+    2025-12-04 12:31:53,327 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1764850610596_0003
+    2025-12-04 12:31:53,997 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-04 12:31:54,144 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-04 12:31:54,387 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1764850610596_0003
+    2025-12-04 12:31:54,387 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-04 12:31:54,844 INFO conf.Configuration: resource-types.xml not found
+    2025-12-04 12:31:54,845 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-04 12:31:55,496 INFO impl.YarnClientImpl: Submitted application application_1764850610596_0003
+    2025-12-04 12:31:55,755 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1764850610596_0003/
+    2025-12-04 12:31:55,804 INFO mapreduce.Job: Running job: job_1764850610596_0003
+    2025-12-04 12:32:06,688 INFO mapreduce.Job: Job job_1764850610596_0003 running in uber mode : false
+    2025-12-04 12:32:06,723 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-04 12:32:19,049 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-04 12:32:28,220 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-04 12:32:28,233 INFO mapreduce.Job: Job job_1764850610596_0003 completed successfully
+    2025-12-04 12:32:28,358 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=6450008
+    		FILE: Number of bytes written=13842513
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=51384518
+    		HDFS: Number of bytes written=688
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=20247
+    		Total time spent by all reduces in occupied slots (ms)=5337
+    		Total time spent by all map tasks (ms)=20247
+    		Total time spent by all reduce tasks (ms)=5337
+    		Total vcore-milliseconds taken by all map tasks=20247
+    		Total vcore-milliseconds taken by all reduce tasks=5337
+    		Total megabyte-milliseconds taken by all map tasks=20732928
+    		Total megabyte-milliseconds taken by all reduce tasks=5465088
+    	Map-Reduce Framework
+    		Map input records=212248
+    		Map output records=212248
+    		Map output bytes=6025506
+    		Map output materialized bytes=6450014
+    		Input split bytes=198
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=20
+    		Reduce shuffle bytes=6450014
+    		Reduce input records=212248
+    		Reduce output records=20
+    		Spilled Records=424496
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=500
+    		CPU time spent (ms)=6900
+    		Physical memory (bytes) snapshot=780238848
+    		Virtual memory (bytes) snapshot=7639511040
+    		Total committed heap usage (bytes)=674758656
+    		Peak Map Physical memory (bytes)=302481408
+    		Peak Map Virtual memory (bytes)=2543669248
+    		Peak Reduce Physical memory (bytes)=260747264
+    		Peak Reduce Virtual memory (bytes)=2554617856
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=51384320
+    	File Output Format Counters 
+    		Bytes Written=688
+    2025-12-04 12:32:28,358 INFO streaming.StreamJob: Output directory: /analisis_logs/salida/urls
+
+
+
+```python
+!hdfs dfs -cat /analisis_logs/salida/urls/part-00000
+```
+
+    "DELETE/usr/admin/developerHTTP/1.0": 10608	
+    "DELETE/usr/adminHTTP/1.0": 10673	
+    "DELETE/usr/loginHTTP/1.0": 10648	
+    "DELETE/usr/registerHTTP/1.0": 10447	
+    "DELETE/usrHTTP/1.0": 10578	
+    "GET/usr/admin/developerHTTP/1.0": 10617	
+    "GET/usr/adminHTTP/1.0": 10559	
+    "GET/usr/loginHTTP/1.0": 10702	
+    "GET/usr/registerHTTP/1.0": 10765	
+    "GET/usrHTTP/1.0": 10681	
+    "POST/usr/admin/developerHTTP/1.0": 10496	
+    "POST/usr/adminHTTP/1.0": 10560	
+    "POST/usr/loginHTTP/1.0": 10615	
+    "POST/usr/registerHTTP/1.0": 10470	
+    "POST/usrHTTP/1.0": 10680	
+    "PUT/usr/admin/developerHTTP/1.0": 10610	
+    "PUT/usr/adminHTTP/1.0": 10547	
+    "PUT/usr/loginHTTP/1.0": 10607	
+    "PUT/usr/registerHTTP/1.0": 10755	
+    "PUT/usrHTTP/1.0": 10610	
+
