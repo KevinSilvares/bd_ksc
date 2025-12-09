@@ -658,3 +658,352 @@ print(f"{current_url}: {current_count}")
     "PUT/usr/registerHTTP/1.0": 10755	
     "PUT/usrHTTP/1.0": 10610	
 
+
+### Mostrar solo las TOP 10 (Opcional)
+
+
+```python
+## TODO
+```
+
+### Distribución por Método HTTP
+
+
+```python
+%%writefile mapper_http.py
+#!/usr/bin/env python3
+
+import sys
+
+for line in sys.stdin:
+    words = line.strip().split()
+    print(f"{words[5]}\t1")
+```
+
+    Overwriting mapper_http.py
+
+
+
+```python
+!cat test_logfiles.log | python3 mapper_http.py | sort | python3 reducer_http.py
+```
+
+    "DELETE: 22
+    "GET: 24
+    "POST: 23
+    "PUT: 27
+
+
+
+```python
+%%writefile reducer_http.py
+#!/usr/bin/env python3
+
+import sys
+
+current_http = None
+current_count = 0
+
+for line in sys.stdin:
+    http, count = line.strip().split("\t")
+
+    if current_http == http:
+        current_count += 1
+    else:
+        if current_http:
+            print(f"{current_http}: {current_count}")
+        
+        current_http = http
+        current_count = 0
+
+print(f"{current_http}: {current_count}")
+```
+
+    Writing reducer_http.py
+
+
+
+```python
+!hdfs dfs -rm -r /analisis_logs/salida/http
+
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_http.py \
+-file reducer_http.py \
+-mapper mapper_http.py \
+-reducer reducer_http.py \
+-input /analisis_logs/logfiles.log \
+-output /analisis_logs/salida/http
+```
+
+    rm: `/analisis_logs/salida/http': No such file or directory
+    2025-12-09 08:48:50,570 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_http.py, reducer_http.py, /tmp/hadoop-unjar4892502937826802651/] [] /tmp/streamjob4749477645011929626.jar tmpDir=null
+    2025-12-09 08:48:51,928 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-09 08:48:52,218 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-09 08:48:53,396 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1765269474125_0001
+    2025-12-09 08:48:57,339 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-09 08:48:57,595 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-09 08:48:58,429 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1765269474125_0001
+    2025-12-09 08:48:58,430 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-09 08:48:59,213 INFO conf.Configuration: resource-types.xml not found
+    2025-12-09 08:48:59,213 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-09 08:49:01,393 INFO impl.YarnClientImpl: Submitted application application_1765269474125_0001
+    2025-12-09 08:49:01,505 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1765269474125_0001/
+    2025-12-09 08:49:01,511 INFO mapreduce.Job: Running job: job_1765269474125_0001
+    2025-12-09 08:49:19,160 INFO mapreduce.Job: Job job_1765269474125_0001 running in uber mode : false
+    2025-12-09 08:49:19,159 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-09 08:49:42,613 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-09 08:49:48,685 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-09 08:49:49,703 INFO mapreduce.Job: Job job_1765269474125_0001 completed successfully
+    2025-12-09 08:49:49,856 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=2121941
+    		FILE: Number of bytes written=5186403
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=51384518
+    		HDFS: Number of bytes written=56
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=34420
+    		Total time spent by all reduces in occupied slots (ms)=4342
+    		Total time spent by all map tasks (ms)=34420
+    		Total time spent by all reduce tasks (ms)=4342
+    		Total vcore-milliseconds taken by all map tasks=34420
+    		Total vcore-milliseconds taken by all reduce tasks=4342
+    		Total megabyte-milliseconds taken by all map tasks=35246080
+    		Total megabyte-milliseconds taken by all reduce tasks=4446208
+    	Map-Reduce Framework
+    		Map input records=212248
+    		Map output records=212248
+    		Map output bytes=1697439
+    		Map output materialized bytes=2121947
+    		Input split bytes=198
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=4
+    		Reduce shuffle bytes=2121947
+    		Reduce input records=212248
+    		Reduce output records=4
+    		Spilled Records=424496
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=328
+    		CPU time spent (ms)=8150
+    		Physical memory (bytes) snapshot=895176704
+    		Virtual memory (bytes) snapshot=7634976768
+    		Total committed heap usage (bytes)=803209216
+    		Peak Map Physical memory (bytes)=322772992
+    		Peak Map Virtual memory (bytes)=2542145536
+    		Peak Reduce Physical memory (bytes)=260677632
+    		Peak Reduce Virtual memory (bytes)=2551271424
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=51384320
+    	File Output Format Counters 
+    		Bytes Written=56
+    2025-12-09 08:49:49,856 INFO streaming.StreamJob: Output directory: /analisis_logs/salida/http
+
+
+
+```python
+!hdfs dfs -cat /analisis_logs/salida/http/part-00000
+```
+
+    "DELETE: 52958	
+    "GET: 53328	
+    "POST: 52825	
+    "PUT: 53133	
+
+
+### Análisis de navegadores
+
+
+```python
+%%writefile mapper_browser.py
+#!/usr/bin/env python3
+
+import sys
+
+#line_count = 1
+for line in sys.stdin:
+    words = line.strip().split()
+    try:
+        # Me quedo con el último campo según hemos visto en clase
+        browser, port = words[-2].split("/")
+        print(f"{browser}\t1")
+        #line_count += 1
+    except ValueError:
+        continue
+        #print("Fallo", line_count, words[-2])
+```
+
+    Overwriting mapper_browser.py
+
+
+El último log está incompleto y rompe el mapper. Dejo el código que he utilizado para detectarlo comentado.
+
+
+```python
+!cat logfiles.log | python3 mapper_browser.py | sort | python3 reducer_browser.py
+```
+
+    Edg: 21179
+    EdgA: 21371
+    Firefox: 42220
+    OPR: 42457
+    Safari: 85015
+
+
+
+```python
+%%writefile reducer_browser.py
+#!/usr/bin/env python3
+
+import sys
+
+current_browser = None
+current_count = 0
+
+for line in sys.stdin:
+    browser, count = line.strip().split("\t")
+
+    if current_browser == browser:
+        current_count += 1
+    else:
+        if current_browser:
+            print(f"{current_browser}: {current_count}")
+        
+        current_browser = browser
+        current_count = 0
+
+print(f"{current_browser}: {current_count}")
+```
+
+    Overwriting reducer_browser.py
+
+
+
+```python
+!hdfs dfs -rm -r /analisis_logs/salida/browser
+
+!hadoop jar \
+/usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.4.0.jar \
+-file mapper_browser.py \
+-file reducer_browser.py \
+-mapper mapper_browser.py \
+-reducer reducer_browser.py \
+-input /analisis_logs/logfiles.log \
+-output /analisis_logs/salida/browser
+```
+
+    Deleted /analisis_logs/salida/browser
+    2025-12-09 09:15:54,033 WARN streaming.StreamJob: -file option is deprecated, please use generic option -files instead.
+    packageJobJar: [mapper_browser.py, reducer_browser.py, /tmp/hadoop-unjar6665039652051486846/] [] /tmp/streamjob3540671342381125192.jar tmpDir=null
+    2025-12-09 09:15:55,327 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-09 09:15:55,548 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at yarnmanager/172.19.0.2:8032
+    2025-12-09 09:15:55,879 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1765269474125_0004
+    2025-12-09 09:15:57,360 INFO mapred.FileInputFormat: Total input files to process : 1
+    2025-12-09 09:15:57,541 INFO mapreduce.JobSubmitter: number of splits:2
+    2025-12-09 09:15:57,749 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1765269474125_0004
+    2025-12-09 09:15:57,750 INFO mapreduce.JobSubmitter: Executing with tokens: []
+    2025-12-09 09:15:58,030 INFO conf.Configuration: resource-types.xml not found
+    2025-12-09 09:15:58,031 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+    2025-12-09 09:15:58,160 INFO impl.YarnClientImpl: Submitted application application_1765269474125_0004
+    2025-12-09 09:15:58,236 INFO mapreduce.Job: The url to track the job: http://yarnmanager:8088/proxy/application_1765269474125_0004/
+    2025-12-09 09:15:58,238 INFO mapreduce.Job: Running job: job_1765269474125_0004
+    2025-12-09 09:16:14,618 INFO mapreduce.Job: Job job_1765269474125_0004 running in uber mode : false
+    2025-12-09 09:16:14,620 INFO mapreduce.Job:  map 0% reduce 0%
+    2025-12-09 09:16:23,850 INFO mapreduce.Job:  map 100% reduce 0%
+    2025-12-09 09:16:32,960 INFO mapreduce.Job:  map 100% reduce 100%
+    2025-12-09 09:16:34,000 INFO mapreduce.Job: Job job_1765269474125_0004 completed successfully
+    2025-12-09 09:16:34,210 INFO mapreduce.Job: Counters: 54
+    	File System Counters
+    		FILE: Number of bytes read=2143286
+    		FILE: Number of bytes written=5229174
+    		FILE: Number of read operations=0
+    		FILE: Number of large read operations=0
+    		FILE: Number of write operations=0
+    		HDFS: Number of bytes read=51384518
+    		HDFS: Number of bytes written=68
+    		HDFS: Number of read operations=11
+    		HDFS: Number of large read operations=0
+    		HDFS: Number of write operations=2
+    		HDFS: Number of bytes read erasure-coded=0
+    	Job Counters 
+    		Launched map tasks=2
+    		Launched reduce tasks=1
+    		Data-local map tasks=2
+    		Total time spent by all maps in occupied slots (ms)=14891
+    		Total time spent by all reduces in occupied slots (ms)=6742
+    		Total time spent by all map tasks (ms)=14891
+    		Total time spent by all reduce tasks (ms)=6742
+    		Total vcore-milliseconds taken by all map tasks=14891
+    		Total vcore-milliseconds taken by all reduce tasks=6742
+    		Total megabyte-milliseconds taken by all map tasks=15248384
+    		Total megabyte-milliseconds taken by all reduce tasks=6903808
+    	Map-Reduce Framework
+    		Map input records=212248
+    		Map output records=212247
+    		Map output bytes=1718786
+    		Map output materialized bytes=2143292
+    		Input split bytes=198
+    		Combine input records=0
+    		Combine output records=0
+    		Reduce input groups=5
+    		Reduce shuffle bytes=2143292
+    		Reduce input records=212247
+    		Reduce output records=5
+    		Spilled Records=424494
+    		Shuffled Maps =2
+    		Failed Shuffles=0
+    		Merged Map outputs=2
+    		GC time elapsed (ms)=240
+    		CPU time spent (ms)=6190
+    		Physical memory (bytes) snapshot=814256128
+    		Virtual memory (bytes) snapshot=7635738624
+    		Total committed heap usage (bytes)=769654784
+    		Peak Map Physical memory (bytes)=302977024
+    		Peak Map Virtual memory (bytes)=2544017408
+    		Peak Reduce Physical memory (bytes)=211238912
+    		Peak Reduce Virtual memory (bytes)=2548781056
+    	Shuffle Errors
+    		BAD_ID=0
+    		CONNECTION=0
+    		IO_ERROR=0
+    		WRONG_LENGTH=0
+    		WRONG_MAP=0
+    		WRONG_REDUCE=0
+    	File Input Format Counters 
+    		Bytes Read=51384320
+    	File Output Format Counters 
+    		Bytes Written=68
+    2025-12-09 09:16:34,210 INFO streaming.StreamJob: Output directory: /analisis_logs/salida/browser
+
+
+
+```python
+!hdfs dfs -cat /analisis_logs/salida/browser/part-00000
+```
+
+    Edg: 21179	
+    EdgA: 21371	
+    Firefox: 42220	
+    OPR: 42457	
+    Safari: 85015	
+
