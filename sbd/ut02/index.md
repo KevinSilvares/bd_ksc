@@ -6,5 +6,6 @@
 4. [PR0204: Estructuras de datos avanzadas: datos geoespaciales](./pr0204/PR0204%20-%20Estructuras%20de%20datos%20avanzadas%20-%20Datos%20geoespaciales.md)
 5. [PR0205: Escritura de datos en InfluxDB](./pr0205/PR0205.md)
 6. [PR0206: Ingesta de datos financieros en InfluxDB](./pr0206/PR0206-IngestaDatosFinancieros.md)
+7. [PR0207: Consultas con Flux](./pr0207/PR0207-ConsultasConFlux.md)
 
 [Volver](../index.md)
