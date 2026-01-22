@@ -351,6 +351,10 @@ df_contactos.show(3)
 ```
 
     SparkSession inciada correctamente.
+
+
+                                                                                    
+
     +--------------------+--------------------+---------+--------------------+--------------------+
     |              nombre|                tipo|provincia|                 web|               email|
     +--------------------+--------------------+---------+--------------------+--------------------+
@@ -359,5 +363,70 @@ df_contactos.show(3)
     |         LAS HAZANAS|Casa Rural de Alq...|    Ávila|                NULL|lashazanas@hotmai...|
     +--------------------+--------------------+---------+--------------------+--------------------+
     only showing top 3 rows
+    
+
+
+### 2.- Renombrado estándar
+
+
+```python
+df_limpio = (df_contactos
+                .withColumnRenamed("nombre", "nombre_establecimiento")
+                .withColumnRenamed("tipo", "categoria_actividad")
+                .withColumnRenamed("web", "sitio_web")
+                .withColumnRenamed("email", "correo_electronico")
+            )
+df_limpio.show(3)
+```
+
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    |nombre_establecimiento| categoria_actividad|provincia|           sitio_web|  correo_electronico|
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    |  BERNARDO MORO MEN...|Profesional de Tu...| Asturias|                NULL|bernardomoro@hotm...|
+    |          LA SASTRERÍA|Casa Rural de Alq...|    Ávila|www.lasastreriade...|                NULL|
+    |           LAS HAZANAS|Casa Rural de Alq...|    Ávila|                NULL|lashazanas@hotmai...|
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    only showing top 3 rows
+    
+
+
+### 3.- Filtrado de texto
+
+
+```python
+df_final = (df_limpio
+               .filter((col("provincia") == "Burgos")  &
+                        (col("categoria_actividad").like("%Bodegas%")) &
+                        (col("sitio_web").isNotNull())
+                      )
+           )
+df_final.show()
+```
+
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    |nombre_establecimiento| categoria_actividad|provincia|           sitio_web|  correo_electronico|
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    |        BODEGAS TARSUS|g - Bodegas y los...|   Burgos|  www.tarsusvino.com|                NULL|
+    |  BODEGAS DOMINIO D...|g - Bodegas y los...|   Burgos|www.dominiodecair...|bodegas@dominiode...|
+    |    TERRITORIO LUTHIER|g - Bodegas y los...|   Burgos|territorioluthier...|luthier@territori...|
+    |    BODEGA COVARRUBIAS|g - Bodegas y los...|   Burgos| http://valdable.com|   info@valdable.com|
+    |  BODEGAS PASCUAL, ...|g - Bodegas y los...|   Burgos|222.bodegaspascua...|export@bodegaspas...|
+    |   BODEGAS VINUM VITAE|g - Bodegas y los...|   Burgos|      www.avañate.es|vinum.vitae.bodeg...|
+    |  VIÑEDOS Y BODEGAS...|g - Bodegas y los...|   Burgos|     www.ferratus.es|administracion@fe...|
+    |  BODEGAS Y VIÑEDOS...|g - Bodegas y los...|   Burgos|     www.pradorey.es|   info@pradorey.com|
+    |       BODEGAS ARROCAL|g - Bodegas y los...|   Burgos|     www.arrocal.com|  blanca@arrocal.com|
+    |           VIÑA ARNÁIZ|g - Bodegas y los...|   Burgos|  www.vinaarnaiz.com|   enoturismo@jgc.es|
+    |    BODEGAS MONTE AMÁN|g - Bodegas y los...|   Burgos|   www.monteaman.com|bodegas@monteaman...|
+    |  BODEGAS PALACIO D...|g - Bodegas y los...|   Burgos|www.palaciodelerm...|info@palaciodeler...|
+    |         ALONSO ANGULO|g - Bodegas y los...|   Burgos|www.alonsoangulo.com|info@alonsoangulo...|
+    |  VIÑA MAMBRILLA, S.L.|g - Bodegas y los...|   Burgos|   www.mambrilla.com| bodegamambrilla.com|
+    |  BODEGAS TRASLASCU...|g - Bodegas y los...|   Burgos|www.bodegastrasla...|administracion@bo...|
+    |  BODEGAS RODERO, S.L.|g - Bodegas y los...|   Burgos|www.bodegasrodero...|rodero@bodegasrod...|
+    |  BODEGAS HERMANOS ...|g - Bodegas y los...|   Burgos|www.perezpascuas.com|viñapedrosa@perez...|
+    |    BOSQUE DE MATASNOS|g - Bodegas y los...|   Burgos|https://bosquedem...|administracion@bo...|
+    |  BODEGAS PRADO DE ...|g - Bodegas y los...|   Burgos|www.pradodeolmedo...|pradodeolmedo@pra...|
+    |  VISITAS ENOTURÍST...|g - Bodegas y los...|   Burgos|www.lopezcristoba...|bodega@lopezcrist...|
+    +----------------------+--------------------+---------+--------------------+--------------------+
+    only showing top 20 rows
     
 
