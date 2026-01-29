@@ -73,7 +73,7 @@ load_crops_df(spark)
 
     Setting default log level to "WARN".
     To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-    26/01/15 09:28:08 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+    26/01/29 09:26:46 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 
 
     SparkSession inciada correctamente.
@@ -92,9 +92,6 @@ load_crops_df(spark)
     +------+--------+---------+-------+-----------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+
     only showing top 5 rows
     
-
-
-    26/01/15 09:28:27 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
 
 
 ## Dataset 2: Lugares famosos del mundo
@@ -122,6 +119,9 @@ def load_world_places_df(spark):
         StructField("entry_fee_usd", DoubleType(), False),
         StructField("best_visit_month", StringType(), False),
         StructField("region", StringType(), False),
+        StructField("average_visit_duration_hours", DoubleType(), False),
+        StructField("tourism_revenue_million_usd", DoubleType(), False),
+        StructField("famous_for", StringType(), False)
     ])
 
     df = (spark.read
@@ -141,24 +141,18 @@ load_world_places_df(spark)
 ```
 
     SparkSession inciada correctamente.
-
-
-    [Stage 1:>                                                          (0 + 1) / 1]
-
-    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+
-    |         place_name|      country|            city|annual_visitors_million|              type|unesco_world_heritage|year_built|entry_fee_usd| best_visit_month|        region|
-    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+
-    |       Eiffel Tower|       France|           Paris|                    7.0|    Monument/Tower|                   No|      1889|         35.0|May-June/Sept-Oct|Western Europe|
-    |       Times Square|United States|   New York City|                   50.0|    Urban Landmark|                   No|      1904|          0.0|Apr-June/Sept-Nov| North America|
-    |      Louvre Museum|       France|           Paris|                    8.7|            Museum|                  Yes|      1793|         22.0|        Oct-March|Western Europe|
-    |Great Wall of China|        China|Beijing/Multiple|                   10.0| Historic Monument|                  Yes|      NULL|         10.0| Apr-May/Sept-Oct|     East Asia|
-    |          Taj Mahal|        India|            Agra|                    7.5|Monument/Mausoleum|                  Yes|      1653|         15.0|        Oct-March|    South Asia|
-    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+
+    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+----------------------------+---------------------------+--------------------+
+    |         place_name|      country|            city|annual_visitors_million|              type|unesco_world_heritage|year_built|entry_fee_usd| best_visit_month|        region|average_visit_duration_hours|tourism_revenue_million_usd|          famous_for|
+    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+----------------------------+---------------------------+--------------------+
+    |       Eiffel Tower|       France|           Paris|                    7.0|    Monument/Tower|                   No|      1889|         35.0|May-June/Sept-Oct|Western Europe|                        95.0|                        2.5|Iconic iron latti...|
+    |       Times Square|United States|   New York City|                   50.0|    Urban Landmark|                   No|      1904|          0.0|Apr-June/Sept-Nov| North America|                        70.0|                        1.5|Bright lights, Br...|
+    |      Louvre Museum|       France|           Paris|                    8.7|            Museum|                  Yes|      1793|         22.0|        Oct-March|Western Europe|                       120.0|                        4.0|World's most visi...|
+    |Great Wall of China|        China|Beijing/Multiple|                   10.0| Historic Monument|                  Yes|      NULL|         10.0| Apr-May/Sept-Oct|     East Asia|                       180.0|                        4.0|Ancient defensive...|
+    |          Taj Mahal|        India|            Agra|                    7.5|Monument/Mausoleum|                  Yes|      1653|         15.0|        Oct-March|    South Asia|                        65.0|                        2.0|White marble maus...|
+    +-------------------+-------------+----------------+-----------------------+------------------+---------------------+----------+-------------+-----------------+--------------+----------------------------+---------------------------+--------------------+
     only showing top 5 rows
     
 
-
-                                                                                    
 
 ## Dataset 3: Registro turístico de Castilla y León
 
@@ -222,6 +216,11 @@ load_cyl_turistic_places(spark)
 ```
 
     SparkSession inciada correctamente.
+
+
+    26/01/29 09:26:59 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+
+
     +--------------------+----------+------+--------------------+---------------+--------------+-----+--------------------+--------------------+--------+---------+---------+---------------+---------------+----------+----------+----------+--------------------+--------------------+---------+-----------+------+------------+-----------+-------------------------------------+---------+--------------------+
     |     establecimiento|n_registro|codigo|                tipo|      categoria|especialidades|clase|              nombre|           direccion|c_postal|provincia|municipio|      localidad|         nucleo|telefono_1|telefono_2|telefono_3|               email|                 web|q_calidad|posada_real|plazas|gps_longitud|gps_latitud|accesible_a_personas_con_discapacidad|column_27|            posicion|
     +--------------------+----------+------+--------------------+---------------+--------------+-----+--------------------+--------------------+--------+---------+---------+---------------+---------------+----------+----------+----------+--------------------+--------------------+---------+-----------+------+------------+-----------+-------------------------------------+---------+--------------------+
@@ -234,3 +233,8 @@ load_cyl_turistic_places(spark)
     only showing top 5 rows
     
 
+
+
+```python
+spark.stop()
+```
