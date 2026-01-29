@@ -78,7 +78,7 @@ df = load_crops_df(spark)
 #             .withColumn("Crop_ID", 
 #                         concat(
 #                             lit("CODIGO_"),
-#                             split(col("region"), "_")[1],
+#                             lpad(split(col("region"), "_")[1], 3 "X"),
 #                             lit("-"),
 #                             upper(col("crop"))
 #                         )
@@ -94,7 +94,17 @@ df_eng = (df
 df_eng.show(3)
 ```
 
+    Setting default log level to "WARN".
+    To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+    26/01/29 08:59:47 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+
+
     SparkSession inciada correctamente.
+
+
+    26/01/29 09:00:02 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
+
+
     +------+--------+---------+-------+-----------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+-----------------+
     |  crop|  region|soil_type|soil_ph|rainfall_mm|temperature_C|humidity_pct|fertilizer_used_kg|irrigation|pesticides_used_kg|planting_density|previous_crop|yield_ton_per_ha|          Crop_ID|
     +------+--------+---------+-------+-----------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+-----------------+
@@ -111,23 +121,27 @@ df_eng.show(3)
 
 ```python
 df_eng = (df_eng
-          .withColumn("rainfall_mm", log(col("rainfall_mm")))
+          .withColumn("rainfall_mm", log(col("rainfall_mm") + 1))
           .withColumn("bround", col("yield_ton_per_ha"))
           .withColumn("yield_ton_per_ha", round(col("yield_ton_per_ha"), 1))
          )
 df_eng.show(3)
 ```
 
+    [Stage 1:>                                                          (0 + 1) / 1]
+
     +------+--------+---------+-------+-----------------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+-----------------+------+
     |  crop|  region|soil_type|soil_ph|      rainfall_mm|temperature_C|humidity_pct|fertilizer_used_kg|irrigation|pesticides_used_kg|planting_density|previous_crop|yield_ton_per_ha|          Crop_ID|bround|
     +------+--------+---------+-------+-----------------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+-----------------+------+
-    | Maize|Region_C|    Sandy|   7.01|7.303439375235196|         19.7|        40.3|             105.1|      Drip|              10.2|            23.2|         Rice|           101.5| CODIGO_XXC_MAIZE|101.48|
-    |Barley|Region_D|     Loam|   5.79|5.989963420981715|         29.1|        55.4|             221.8| Sprinkler|              35.5|             7.4|       Barley|           127.4|CODIGO_XXD_BARLEY|127.39|
-    |  Rice|Region_C|     Clay|   7.24| 6.88847051757027|         30.5|        74.4|              61.2| Sprinkler|              40.0|             5.1|        Wheat|            69.0|  CODIGO_XXC_RICE| 68.99|
+    | Maize|Region_C|    Sandy|   7.01|7.304112368059574|         19.7|        40.3|             105.1|      Drip|              10.2|            23.2|         Rice|           101.5| CODIGO_XXC_MAIZE|101.48|
+    |Barley|Region_D|     Loam|   5.79|5.992464047441065|         29.1|        55.4|             221.8| Sprinkler|              35.5|             7.4|       Barley|           127.4|CODIGO_XXD_BARLEY|127.39|
+    |  Rice|Region_C|     Clay|   7.24|6.889489470175245|         30.5|        74.4|              61.2| Sprinkler|              40.0|             5.1|        Wheat|            69.0|  CODIGO_XXC_RICE| 68.99|
     +------+--------+---------+-------+-----------------+-------------+------------+------------------+----------+------------------+----------------+-------------+----------------+-----------------+------+
     only showing top 3 rows
     
 
+
+                                                                                    
 
 ### 3.- Comparación de insumos
 
