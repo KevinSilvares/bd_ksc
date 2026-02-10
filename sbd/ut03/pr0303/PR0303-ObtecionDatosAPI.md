@@ -177,6 +177,14 @@ df_vehicles.head(5)
 
 
 
+
+```python
+print("Nombre columnas: ", df_vehicles.columns.to_list())
+```
+
+    Nombre columnas:  ['name', 'model', 'manufacturer', 'cost_in_credits', 'length', 'max_atmosphering_speed', 'crew', 'passengers', 'cargo_capacity', 'consumables', 'vehicle_class', 'pilots', 'films', 'created', 'edited', 'url']
+
+
 ## 2.- Gestión de paginación
 
 
