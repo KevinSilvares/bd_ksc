@@ -371,15 +371,22 @@ def request_by_homeworld(homeworld):
 
 ```python
 df_20_people = df_people.head(20).copy()
-planets = df_20_people["homeworld"].apply(request_by_homeworld)
-df_planets = pd.json_normalize(planets)
+planets_urls = df_20_people["homeworld"].unique()
 
-df_people = pd.concat([df_people, df_planets])
+planets = {}
+for planet in planets_urls:
+    planets[planet] = request_by_homeworld(planet)
+
+df_planets = pd.DataFrame.from_dict(planets, orient = "index").reset_index()
+
+df_planets["homeworld"] = df_planets["index"]
+
+df_20_people = df_20_people.merge(df_planets, on = "homeworld", how = "left")
 ```
 
 
 ```python
-df_people
+df_20_people
 ```
 
 
@@ -403,7 +410,7 @@ df_people
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>name</th>
+      <th>name_x</th>
       <th>height</th>
       <th>mass</th>
       <th>hair_color</th>
@@ -412,18 +419,18 @@ df_people
       <th>birth_year</th>
       <th>gender</th>
       <th>homeworld</th>
-      <th>films</th>
+      <th>films_x</th>
       <th>...</th>
+      <th>climate_y</th>
+      <th>gravity_y</th>
+      <th>terrain_y</th>
+      <th>surface_water_y</th>
+      <th>population_y</th>
+      <th>residents_y</th>
+      <th>films</th>
+      <th>created</th>
+      <th>edited</th>
       <th>url</th>
-      <th>rotation_period</th>
-      <th>orbital_period</th>
-      <th>diameter</th>
-      <th>climate</th>
-      <th>gravity</th>
-      <th>terrain</th>
-      <th>surface_water</th>
-      <th>population</th>
-      <th>residents</th>
     </tr>
   </thead>
   <tbody>
@@ -440,16 +447,16 @@ df_people
       <td>https://swapi.dev/api/planets/1/</td>
       <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/1/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>1</th>
@@ -464,16 +471,16 @@ df_people
       <td>https://swapi.dev/api/planets/1/</td>
       <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/2/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>2</th>
@@ -488,16 +495,16 @@ df_people
       <td>https://swapi.dev/api/planets/8/</td>
       <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/3/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/3/, https://swapi...</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
     </tr>
     <tr>
       <th>3</th>
@@ -512,16 +519,16 @@ df_people
       <td>https://swapi.dev/api/planets/1/</td>
       <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/4/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>4</th>
@@ -536,164 +543,380 @@ df_people
       <td>https://swapi.dev/api/planets/2/</td>
       <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/5/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>Nal Hutta</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>[]</td>
-      <td>...</td>
-      <td>https://swapi.dev/api/planets/24/</td>
-      <td>87</td>
-      <td>413</td>
-      <td>12150</td>
       <td>temperate</td>
       <td>1 standard</td>
-      <td>urban, oceans, swamps, bogs</td>
-      <td>unknown</td>
-      <td>7000000000</td>
-      <td>[https://swapi.dev/api/people/16/]</td>
+      <td>grasslands, mountains</td>
+      <td>40</td>
+      <td>2000000000</td>
+      <td>[https://swapi.dev/api/people/5/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-10T11:35:48.479000Z</td>
+      <td>2014-12-20T20:58:18.420000Z</td>
+      <td>https://swapi.dev/api/planets/2/</td>
     </tr>
     <tr>
-      <th>16</th>
-      <td>Corellia</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>[]</td>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Obi-Wan Kenobi</td>
+      <td>182</td>
+      <td>77</td>
+      <td>auburn, white</td>
+      <td>fair</td>
+      <td>blue-gray</td>
+      <td>57BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/20/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grass</td>
+      <td>unknown</td>
+      <td>unknown</td>
+      <td>[https://swapi.dev/api/people/10/]</td>
+      <td>[]</td>
+      <td>2014-12-10T16:16:26.566000Z</td>
+      <td>2014-12-20T20:58:18.452000Z</td>
+      <td>https://swapi.dev/api/planets/20/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Wilhuff Tarkin</td>
+      <td>180</td>
+      <td>unknown</td>
+      <td>auburn, grey</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>64BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/21/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>polluted</td>
+      <td>1 standard</td>
+      <td>cityscape</td>
+      <td>unknown</td>
+      <td>22000000000</td>
+      <td>[https://swapi.dev/api/people/12/]</td>
+      <td>[]</td>
+      <td>2014-12-10T16:26:54.384000Z</td>
+      <td>2014-12-20T20:58:18.454000Z</td>
+      <td>https://swapi.dev/api/planets/21/</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Chewbacca</td>
+      <td>228</td>
+      <td>112</td>
+      <td>brown</td>
+      <td>unknown</td>
+      <td>blue</td>
+      <td>200BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/14/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>tropical</td>
+      <td>1 standard</td>
+      <td>jungle, forests, lakes, rivers</td>
+      <td>60</td>
+      <td>45000000</td>
+      <td>[https://swapi.dev/api/people/13/, https://swa...</td>
+      <td>[https://swapi.dev/api/films/6/]</td>
+      <td>2014-12-10T13:32:00.124000Z</td>
+      <td>2014-12-20T20:58:18.442000Z</td>
+      <td>https://swapi.dev/api/planets/14/</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Han Solo</td>
+      <td>180</td>
+      <td>80</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>brown</td>
+      <td>29BBY</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/22/</td>
-      <td>25</td>
-      <td>329</td>
-      <td>11000</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
       <td>temperate</td>
       <td>1 standard</td>
       <td>plains, urban, hills, forests</td>
       <td>70</td>
       <td>3000000000</td>
       <td>[https://swapi.dev/api/people/14/, https://swa...</td>
+      <td>[]</td>
+      <td>2014-12-10T16:49:12.453000Z</td>
+      <td>2014-12-20T20:58:18.456000Z</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Greedo</td>
+      <td>173</td>
+      <td>74</td>
+      <td>n/a</td>
+      <td>green</td>
+      <td>black</td>
+      <td>44BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/23/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>hot</td>
+      <td>1 standard</td>
+      <td>jungles, oceans, urban, swamps</td>
+      <td>60</td>
+      <td>1300000000</td>
+      <td>[https://swapi.dev/api/people/15/]</td>
+      <td>[]</td>
+      <td>2014-12-10T17:03:28.110000Z</td>
+      <td>2014-12-20T20:58:18.458000Z</td>
+      <td>https://swapi.dev/api/planets/23/</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Jabba Desilijic Tiure</td>
+      <td>175</td>
+      <td>1,358</td>
+      <td>n/a</td>
+      <td>green-tan, brown</td>
+      <td>orange</td>
+      <td>600BBY</td>
+      <td>hermaphrodite</td>
+      <td>https://swapi.dev/api/planets/24/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>urban, oceans, swamps, bogs</td>
+      <td>unknown</td>
+      <td>7000000000</td>
+      <td>[https://swapi.dev/api/people/16/]</td>
+      <td>[]</td>
+      <td>2014-12-10T17:11:29.452000Z</td>
+      <td>2014-12-20T20:58:18.460000Z</td>
+      <td>https://swapi.dev/api/planets/24/</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Wedge Antilles</td>
+      <td>170</td>
+      <td>77</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>hazel</td>
+      <td>21BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>plains, urban, hills, forests</td>
+      <td>70</td>
+      <td>3000000000</td>
+      <td>[https://swapi.dev/api/people/14/, https://swa...</td>
+      <td>[]</td>
+      <td>2014-12-10T16:49:12.453000Z</td>
+      <td>2014-12-20T20:58:18.456000Z</td>
+      <td>https://swapi.dev/api/planets/22/</td>
     </tr>
     <tr>
       <th>17</th>
-      <td>Bestine IV</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>[]</td>
-      <td>...</td>
+      <td>Jek Tono Porkins</td>
+      <td>180</td>
+      <td>110</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>unknown</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/26/</td>
-      <td>26</td>
-      <td>680</td>
-      <td>6400</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
       <td>temperate</td>
       <td>unknown</td>
       <td>rocky islands, oceans</td>
       <td>98</td>
       <td>62000000</td>
       <td>[https://swapi.dev/api/people/19/]</td>
+      <td>[]</td>
+      <td>2014-12-12T11:16:55.078000Z</td>
+      <td>2014-12-20T20:58:18.463000Z</td>
+      <td>https://swapi.dev/api/planets/26/</td>
     </tr>
     <tr>
       <th>18</th>
-      <td>unknown</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>[]</td>
-      <td>...</td>
+      <td>Yoda</td>
+      <td>66</td>
+      <td>17</td>
+      <td>white</td>
+      <td>green</td>
+      <td>brown</td>
+      <td>896BBY</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/28/</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>[https://swapi.dev/api/people/20/, https://swa...</td>
+      <td>[]</td>
+      <td>2014-12-15T12:25:59.569000Z</td>
+      <td>2014-12-20T20:58:18.466000Z</td>
+      <td>https://swapi.dev/api/planets/28/</td>
     </tr>
     <tr>
       <th>19</th>
-      <td>Naboo</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>[https://swapi.dev/api/films/3/, https://swapi...</td>
-      <td>...</td>
+      <td>Palpatine</td>
+      <td>170</td>
+      <td>75</td>
+      <td>grey</td>
+      <td>pale</td>
+      <td>yellow</td>
+      <td>82BBY</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/8/</td>
-      <td>26</td>
-      <td>312</td>
-      <td>12120</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>temperate</td>
       <td>1 standard</td>
       <td>grassy hills, swamps, forests, mountains</td>
       <td>12</td>
       <td>4500000000</td>
       <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>[https://swapi.dev/api/films/3/, https://swapi...</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
     </tr>
   </tbody>
 </table>
-<p>100 rows × 25 columns</p>
+<p>20 rows × 46 columns</p>
 </div>
 
 
@@ -702,7 +925,7 @@ df_people
 
 
 ```python
-df_people = df_people.explode("films")
+df_people = df_20_people.explode("films")
 df_people
 ```
 
@@ -727,7 +950,7 @@ df_people
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>name</th>
+      <th>name_x</th>
       <th>height</th>
       <th>mass</th>
       <th>hair_color</th>
@@ -736,18 +959,18 @@ df_people
       <th>birth_year</th>
       <th>gender</th>
       <th>homeworld</th>
-      <th>films</th>
+      <th>films_x</th>
       <th>...</th>
+      <th>climate_y</th>
+      <th>gravity_y</th>
+      <th>terrain_y</th>
+      <th>surface_water_y</th>
+      <th>population_y</th>
+      <th>residents_y</th>
+      <th>films</th>
+      <th>created</th>
+      <th>edited</th>
       <th>url</th>
-      <th>rotation_period</th>
-      <th>orbital_period</th>
-      <th>diameter</th>
-      <th>climate</th>
-      <th>gravity</th>
-      <th>terrain</th>
-      <th>surface_water</th>
-      <th>population</th>
-      <th>residents</th>
     </tr>
   </thead>
   <tbody>
@@ -762,18 +985,18 @@ df_people
       <td>19BBY</td>
       <td>male</td>
       <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
       <td>https://swapi.dev/api/films/1/</td>
-      <td>...</td>
-      <td>https://swapi.dev/api/people/1/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>0</th>
@@ -786,42 +1009,18 @@ df_people
       <td>19BBY</td>
       <td>male</td>
       <td>https://swapi.dev/api/planets/1/</td>
-      <td>https://swapi.dev/api/films/2/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/1/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>Luke Skywalker</td>
-      <td>172</td>
-      <td>77</td>
-      <td>blond</td>
-      <td>fair</td>
-      <td>blue</td>
-      <td>19BBY</td>
-      <td>male</td>
-      <td>https://swapi.dev/api/planets/1/</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
       <td>https://swapi.dev/api/films/3/</td>
-      <td>...</td>
-      <td>https://swapi.dev/api/people/1/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>0</th>
@@ -834,18 +1033,66 @@ df_people
       <td>19BBY</td>
       <td>male</td>
       <td>https://swapi.dev/api/planets/1/</td>
-      <td>https://swapi.dev/api/films/6/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/1/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>Luke Skywalker</td>
+      <td>172</td>
+      <td>77</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>19BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>Luke Skywalker</td>
+      <td>172</td>
+      <td>77</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>19BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
       <th>1</th>
@@ -858,166 +1105,1294 @@ df_people
       <td>112BBY</td>
       <td>n/a</td>
       <td>https://swapi.dev/api/planets/1/</td>
-      <td>https://swapi.dev/api/films/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
-      <td>https://swapi.dev/api/people/2/</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
     </tr>
     <tr>
-      <th>...</th>
+      <th>1</th>
+      <td>C-3PO</td>
+      <td>167</td>
+      <td>75</td>
+      <td>n/a</td>
+      <td>gold</td>
+      <td>yellow</td>
+      <td>112BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C-3PO</td>
+      <td>167</td>
+      <td>75</td>
+      <td>n/a</td>
+      <td>gold</td>
+      <td>yellow</td>
+      <td>112BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C-3PO</td>
+      <td>167</td>
+      <td>75</td>
+      <td>n/a</td>
+      <td>gold</td>
+      <td>yellow</td>
+      <td>112BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C-3PO</td>
+      <td>167</td>
+      <td>75</td>
+      <td>n/a</td>
+      <td>gold</td>
+      <td>yellow</td>
+      <td>112BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>R2-D2</td>
+      <td>96</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, blue</td>
+      <td>red</td>
+      <td>33BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>R2-D2</td>
+      <td>96</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, blue</td>
+      <td>red</td>
+      <td>33BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>R2-D2</td>
+      <td>96</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, blue</td>
+      <td>red</td>
+      <td>33BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>R2-D2</td>
+      <td>96</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, blue</td>
+      <td>red</td>
+      <td>33BBY</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Darth Vader</td>
+      <td>202</td>
+      <td>136</td>
+      <td>none</td>
+      <td>white</td>
+      <td>yellow</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Darth Vader</td>
+      <td>202</td>
+      <td>136</td>
+      <td>none</td>
+      <td>white</td>
+      <td>yellow</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Darth Vader</td>
+      <td>202</td>
+      <td>136</td>
+      <td>none</td>
+      <td>white</td>
+      <td>yellow</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Darth Vader</td>
+      <td>202</td>
+      <td>136</td>
+      <td>none</td>
+      <td>white</td>
+      <td>yellow</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Darth Vader</td>
+      <td>202</td>
+      <td>136</td>
+      <td>none</td>
+      <td>white</td>
+      <td>yellow</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Leia Organa</td>
+      <td>150</td>
+      <td>49</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>19BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/2/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grasslands, mountains</td>
+      <td>40</td>
+      <td>2000000000</td>
+      <td>[https://swapi.dev/api/people/5/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-10T11:35:48.479000Z</td>
+      <td>2014-12-20T20:58:18.420000Z</td>
+      <td>https://swapi.dev/api/planets/2/</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Leia Organa</td>
+      <td>150</td>
+      <td>49</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>19BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/2/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grasslands, mountains</td>
+      <td>40</td>
+      <td>2000000000</td>
+      <td>[https://swapi.dev/api/people/5/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-10T11:35:48.479000Z</td>
+      <td>2014-12-20T20:58:18.420000Z</td>
+      <td>https://swapi.dev/api/planets/2/</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Owen Lars</td>
+      <td>178</td>
+      <td>120</td>
+      <td>brown, grey</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>52BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
       <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Beru Whitesun lars</td>
+      <td>165</td>
+      <td>75</td>
+      <td>brown</td>
+      <td>light</td>
+      <td>blue</td>
+      <td>47BBY</td>
+      <td>female</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>R5-D4</td>
+      <td>97</td>
+      <td>32</td>
+      <td>n/a</td>
+      <td>white, red</td>
+      <td>red</td>
+      <td>unknown</td>
+      <td>n/a</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Biggs Darklighter</td>
+      <td>183</td>
+      <td>84</td>
+      <td>black</td>
+      <td>light</td>
+      <td>brown</td>
+      <td>24BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Obi-Wan Kenobi</td>
+      <td>182</td>
+      <td>77</td>
+      <td>auburn, white</td>
+      <td>fair</td>
+      <td>blue-gray</td>
+      <td>57BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/20/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grass</td>
+      <td>unknown</td>
+      <td>unknown</td>
+      <td>[https://swapi.dev/api/people/10/]</td>
+      <td>NaN</td>
+      <td>2014-12-10T16:16:26.566000Z</td>
+      <td>2014-12-20T20:58:18.452000Z</td>
+      <td>https://swapi.dev/api/planets/20/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/1/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/3/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/4/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/5/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Anakin Skywalker</td>
+      <td>188</td>
+      <td>84</td>
+      <td>blond</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>41.9BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+      <td>[https://swapi.dev/api/films/4/, https://swapi...</td>
+      <td>...</td>
+      <td>arid</td>
+      <td>1 standard</td>
+      <td>desert</td>
+      <td>1</td>
+      <td>200000</td>
+      <td>[https://swapi.dev/api/people/1/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-09T13:50:49.641000Z</td>
+      <td>2014-12-20T20:58:18.411000Z</td>
+      <td>https://swapi.dev/api/planets/1/</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Wilhuff Tarkin</td>
+      <td>180</td>
+      <td>unknown</td>
+      <td>auburn, grey</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>64BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/21/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>polluted</td>
+      <td>1 standard</td>
+      <td>cityscape</td>
+      <td>unknown</td>
+      <td>22000000000</td>
+      <td>[https://swapi.dev/api/people/12/]</td>
+      <td>NaN</td>
+      <td>2014-12-10T16:26:54.384000Z</td>
+      <td>2014-12-20T20:58:18.454000Z</td>
+      <td>https://swapi.dev/api/planets/21/</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Chewbacca</td>
+      <td>228</td>
+      <td>112</td>
+      <td>brown</td>
+      <td>unknown</td>
+      <td>blue</td>
+      <td>200BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/14/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>tropical</td>
+      <td>1 standard</td>
+      <td>jungle, forests, lakes, rivers</td>
+      <td>60</td>
+      <td>45000000</td>
+      <td>[https://swapi.dev/api/people/13/, https://swa...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-10T13:32:00.124000Z</td>
+      <td>2014-12-20T20:58:18.442000Z</td>
+      <td>https://swapi.dev/api/planets/14/</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Han Solo</td>
+      <td>180</td>
+      <td>80</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>brown</td>
+      <td>29BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>plains, urban, hills, forests</td>
+      <td>70</td>
+      <td>3000000000</td>
+      <td>[https://swapi.dev/api/people/14/, https://swa...</td>
+      <td>NaN</td>
+      <td>2014-12-10T16:49:12.453000Z</td>
+      <td>2014-12-20T20:58:18.456000Z</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Greedo</td>
+      <td>173</td>
+      <td>74</td>
+      <td>n/a</td>
+      <td>green</td>
+      <td>black</td>
+      <td>44BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/23/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>hot</td>
+      <td>1 standard</td>
+      <td>jungles, oceans, urban, swamps</td>
+      <td>60</td>
+      <td>1300000000</td>
+      <td>[https://swapi.dev/api/people/15/]</td>
+      <td>NaN</td>
+      <td>2014-12-10T17:03:28.110000Z</td>
+      <td>2014-12-20T20:58:18.458000Z</td>
+      <td>https://swapi.dev/api/planets/23/</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Jabba Desilijic Tiure</td>
+      <td>175</td>
+      <td>1,358</td>
+      <td>n/a</td>
+      <td>green-tan, brown</td>
+      <td>orange</td>
+      <td>600BBY</td>
+      <td>hermaphrodite</td>
+      <td>https://swapi.dev/api/planets/24/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>urban, oceans, swamps, bogs</td>
+      <td>unknown</td>
+      <td>7000000000</td>
+      <td>[https://swapi.dev/api/people/16/]</td>
+      <td>NaN</td>
+      <td>2014-12-10T17:11:29.452000Z</td>
+      <td>2014-12-20T20:58:18.460000Z</td>
+      <td>https://swapi.dev/api/planets/24/</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Wedge Antilles</td>
+      <td>170</td>
+      <td>77</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>hazel</td>
+      <td>21BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+      <td>[https://swapi.dev/api/films/1/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>plains, urban, hills, forests</td>
+      <td>70</td>
+      <td>3000000000</td>
+      <td>[https://swapi.dev/api/people/14/, https://swa...</td>
+      <td>NaN</td>
+      <td>2014-12-10T16:49:12.453000Z</td>
+      <td>2014-12-20T20:58:18.456000Z</td>
+      <td>https://swapi.dev/api/planets/22/</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Jek Tono Porkins</td>
+      <td>180</td>
+      <td>110</td>
+      <td>brown</td>
+      <td>fair</td>
+      <td>blue</td>
+      <td>unknown</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/26/</td>
+      <td>[https://swapi.dev/api/films/1/]</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>unknown</td>
+      <td>rocky islands, oceans</td>
+      <td>98</td>
+      <td>62000000</td>
+      <td>[https://swapi.dev/api/people/19/]</td>
+      <td>NaN</td>
+      <td>2014-12-12T11:16:55.078000Z</td>
+      <td>2014-12-20T20:58:18.463000Z</td>
+      <td>https://swapi.dev/api/planets/26/</td>
     </tr>
     <tr>
       <th>18</th>
-      <td>unknown</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
+      <td>Yoda</td>
+      <td>66</td>
+      <td>17</td>
+      <td>white</td>
+      <td>green</td>
+      <td>brown</td>
+      <td>896BBY</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/28/</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>unknown</td>
       <td>[https://swapi.dev/api/people/20/, https://swa...</td>
+      <td>NaN</td>
+      <td>2014-12-15T12:25:59.569000Z</td>
+      <td>2014-12-20T20:58:18.466000Z</td>
+      <td>https://swapi.dev/api/planets/28/</td>
     </tr>
     <tr>
       <th>19</th>
-      <td>Naboo</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
+      <td>Palpatine</td>
+      <td>170</td>
+      <td>75</td>
+      <td>grey</td>
+      <td>pale</td>
+      <td>yellow</td>
+      <td>82BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
+      <td>temperate</td>
+      <td>1 standard</td>
+      <td>grassy hills, swamps, forests, mountains</td>
+      <td>12</td>
+      <td>4500000000</td>
+      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
       <td>https://swapi.dev/api/films/3/</td>
-      <td>...</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
       <td>https://swapi.dev/api/planets/8/</td>
-      <td>26</td>
-      <td>312</td>
-      <td>12120</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Palpatine</td>
+      <td>170</td>
+      <td>75</td>
+      <td>grey</td>
+      <td>pale</td>
+      <td>yellow</td>
+      <td>82BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>temperate</td>
       <td>1 standard</td>
       <td>grassy hills, swamps, forests, mountains</td>
       <td>12</td>
       <td>4500000000</td>
       <td>[https://swapi.dev/api/people/3/, https://swap...</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>Naboo</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>https://swapi.dev/api/films/4/</td>
-      <td>...</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
       <td>https://swapi.dev/api/planets/8/</td>
-      <td>26</td>
-      <td>312</td>
-      <td>12120</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Palpatine</td>
+      <td>170</td>
+      <td>75</td>
+      <td>grey</td>
+      <td>pale</td>
+      <td>yellow</td>
+      <td>82BBY</td>
+      <td>male</td>
+      <td>https://swapi.dev/api/planets/8/</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>temperate</td>
       <td>1 standard</td>
       <td>grassy hills, swamps, forests, mountains</td>
       <td>12</td>
       <td>4500000000</td>
       <td>[https://swapi.dev/api/people/3/, https://swap...</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>Naboo</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>https://swapi.dev/api/films/5/</td>
-      <td>...</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
       <td>https://swapi.dev/api/planets/8/</td>
-      <td>26</td>
-      <td>312</td>
-      <td>12120</td>
-      <td>temperate</td>
-      <td>1 standard</td>
-      <td>grassy hills, swamps, forests, mountains</td>
-      <td>12</td>
-      <td>4500000000</td>
-      <td>[https://swapi.dev/api/people/3/, https://swap...</td>
     </tr>
     <tr>
       <th>19</th>
-      <td>Naboo</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>https://swapi.dev/api/films/6/</td>
-      <td>...</td>
+      <td>Palpatine</td>
+      <td>170</td>
+      <td>75</td>
+      <td>grey</td>
+      <td>pale</td>
+      <td>yellow</td>
+      <td>82BBY</td>
+      <td>male</td>
       <td>https://swapi.dev/api/planets/8/</td>
-      <td>26</td>
-      <td>312</td>
-      <td>12120</td>
+      <td>[https://swapi.dev/api/films/2/, https://swapi...</td>
+      <td>...</td>
       <td>temperate</td>
       <td>1 standard</td>
       <td>grassy hills, swamps, forests, mountains</td>
       <td>12</td>
       <td>4500000000</td>
       <td>[https://swapi.dev/api/people/3/, https://swap...</td>
+      <td>https://swapi.dev/api/films/6/</td>
+      <td>2014-12-10T11:52:31.066000Z</td>
+      <td>2014-12-20T20:58:18.430000Z</td>
+      <td>https://swapi.dev/api/planets/8/</td>
     </tr>
   </tbody>
 </table>
-<p>218 rows × 25 columns</p>
+<p>59 rows × 46 columns</p>
 </div>
 
 
