@@ -5,5 +5,6 @@
 3. [PR0503 - Limpieza de datos sobre dataset de cultivos](./pr0503/Pr0503-LimpiezaCultivos.md)
 4. [PR0504 - Limpieza de datos sobre dataset de lugares famosos](./pr0504/PR0504-LimpiezaDatosLugaresFamosos.md)
 5. [PR0504B - Limpieza de datos sobre dataset de lugares famosos](./pr0504b/PR0504B-LimpiezaDatosCyl.md)
+6. [PR0505 - Análisis de estadísticas en dataset](./pr0505/PR0505-AnalisisEstadisticoDataset.md)
 
 [Volver](../index.md)

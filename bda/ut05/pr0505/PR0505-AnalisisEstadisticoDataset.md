@@ -77,13 +77,14 @@ df.show(3)
 
     Setting default log level to "WARN".
     To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-    26/02/18 11:34:45 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+    26/02/19 08:45:39 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 
 
     SparkSession inciada correctamente.
 
 
-                                                                                    
+    26/02/19 08:45:52 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
+
 
     +-----+--------------------+--------------------+-----------------+----------------+--------+-----------+-------------+------------+-----------+----------+------+-----------+--------------------+--------+-------+-----------+---------+----------+
     |index|               title|         description|amount(in rupees)|price(in rupees)|location|carpet_area|       status|       floor|transaction|furnishing|facing|overlooking|             society|bathroom|balcony|car_parking|ownership|super_area|
@@ -188,7 +189,7 @@ df_metrics = (df_stats
 df_metrics.show()
 ```
 
-    [Stage 4:======================>                                    (3 + 5) / 8]
+    [Stage 4:=======>                                                   (1 + 7) / 8]
 
     +-----------------+--------------------+
     |stddev amount_usd| varianza amount_usd|
@@ -211,18 +212,17 @@ No. Son demasiado dispares para confiar en el promedio. Una desviación estandar
 df_metrics = (df_stats
               .agg(
                   f.skewness("amount_usd").alias("skewness amount_usd"),
-                  f.kurtosis("amount_usd").alias("skewness amount_usd")
+                  f.kurtosis("amount_usd").alias("kurtosis amount_usd")
              )
 )
 
 df_metrics.show()
 ```
 
-    26/02/18 11:35:03 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
-    [Stage 7:============================================>              (6 + 2) / 8]
+    [Stage 7:=============================>                             (4 + 4) / 8]
 
     +-------------------+-------------------+
-    |skewness amount_usd|skewness amount_usd|
+    |skewness amount_usd|kurtosis amount_usd|
     +-------------------+-------------------+
     |  270.7690536208719|  91491.17725573125|
     +-------------------+-------------------+
@@ -255,7 +255,7 @@ df_metrics = (df_stats
 df_metrics.show()
 ```
 
-    [Stage 10:=======>                                                  (1 + 7) / 8]
+    [Stage 10:=====================>                                    (3 + 5) / 8]
 
     +-----------------+------------------+
     |stddev amount_usd|    stddev area m2|
@@ -320,7 +320,7 @@ df_test = (df_stats
 df_test.show(truncate = False)
 ```
 
-    [Stage 36:>                                                         (0 + 8) / 8]
+    [Stage 20:===========================================>              (6 + 2) / 8]
 
     +----------------------+---------------------+---------------------+-----------------+
     |mean norm amount_usd  |stddev amount_usd_std|mean area_m2_mean    |std area_m2_std  |
@@ -331,3 +331,170 @@ df_test.show(truncate = False)
 
 
                                                                                     
+
+### 3.2.- Gestión de outliers (kurtosis)
+
+
+```python
+quantile_98 = df_stats.approxQuantile("amount_usd", [0.98], 0.01)[0]
+print(quantile_98)
+```
+
+    [Stage 64:=====================>                                    (3 + 5) / 8]
+
+    522000.0
+
+
+                                                                                    
+
+
+```python
+df_stats = (df_stats
+            .withColumn("amount_usd", 
+                       f.when(col("amount_usd") > quantile_98, quantile_98)
+                       .otherwise(col("amount_usd"))
+                       )
+)
+df_stats.select("amount_usd").show(10)
+```
+
+                                                                                    
+
+    +----------+
+    |amount_usd|
+    +----------+
+    |   50400.0|
+    |  117600.0|
+    |  168000.0|
+    |   30000.0|
+    |  192000.0|
+    |   54000.0|
+    |   19800.0|
+    |   72000.0|
+    |   72000.0|
+    |  192000.0|
+    +----------+
+    only showing top 10 rows
+    
+
+
+
+```python
+(df_stats
+    .agg(
+        f.kurtosis("amount_usd").alias("kurtosis amount_usd")
+    )
+).show()
+```
+
+    [Stage 58:>                                                         (0 + 8) / 8]
+
+    +-------------------+
+    |kurtosis amount_usd|
+    +-------------------+
+    | 2.6874337988728474|
+    +-------------------+
+    
+
+
+                                                                                    
+
+Al poner el percentil `99` no ocurría ningún cambio (era un valor demasiado grande). Al probar con el percentil `98` ocurren cambios muy grandes.
+
+La kurtosis ha bajado de `91491.177` a `2.687`.
+
+Esto ha aplanado muchísimo la kurtosis en comparación a los datos originales. Se debe a que el 2% de los datos son extremadamente altos y son capaces de mover toda la media.
+
+## 4.- Análisis de segmentos (grouping & aggregation)
+
+### 4.1.- Ingeniería de varaible (Extracción de `BHK` - Bedroom-Hall-Kitchen)
+
+
+```python
+df_stats = (df_stats
+            .withColumn("num_bedrooms", f.split(col("title"), " ")[0])
+)
+
+df_stats.select("num_bedrooms").show(3)
+```
+
+                                                                                    
+
+    +------------+
+    |num_bedrooms|
+    +------------+
+    |           1|
+    |           2|
+    |           2|
+    +------------+
+    only showing top 3 rows
+    
+
+
+### 4.2.- Cálculo de estadísticas por grupo
+
+
+```python
+df_group_stats = (df_stats.groupBy("num_bedrooms")
+                    .agg(
+                        f.mean("amount_usd").alias("mean amount_usd"),
+                        f.stddev("amount_usd").alias("stddev amount_usd"),
+                        f.skewness("amount_usd").alias("skewness amount_usd")
+                    )
+)
+
+df_group_stats.show()
+```
+
+    [Stage 85:==================================================>       (7 + 1) / 8]
+
+    +------------+------------------+------------------+--------------------+
+    |num_bedrooms|   mean amount_usd| stddev amount_usd| skewness amount_usd|
+    +------------+------------------+------------------+--------------------+
+    |           7|365714.28571428574|175392.59472883763| -0.4535274057936664|
+    |           3|159792.60432422813|102307.33367249861|  1.4862748420224012|
+    |           8|          481320.0|128079.07557442784| -3.1823856250984415|
+    |           5|421445.37313432834|122973.35364247691| -1.3049367666576699|
+    |           6| 378769.5652173913|163999.10194013725| -0.5550698823138144|
+    |           9|396857.14285714284|146823.50921137547| -0.5632707818439866|
+    |           1|  42372.8883087824|32255.951762206594|   4.034451609718177|
+    |          10|335345.45454545453|160865.68536289126| -0.2959601334705853|
+    |           4|  312863.955922865|146091.91560877932|0.010915875785437705|
+    |            |53031.347962382446| 73502.53267617724|   4.276823580082054|
+    |           >|          421500.0|127536.92275833954| -0.9667383140399325|
+    |           2| 73373.51949599864| 46557.80693436289|  2.6693929793525335|
+    |          "4|          119400.0|              NULL|                NULL|
+    |          "3|           58800.0|              NULL|                NULL|
+    +------------+------------------+------------------+--------------------+
+    
+
+
+                                                                                    
+
+Existe algún dato con nombre y valores extraños que convendría limpiar o tratar de alguna manera.
+
+### 4.3.- Preguntas de análisis para el modelo
+
+#### A. Análisis de variabilidad (Desviación Estándar)
+
+**Pregunta:** Si la desviación es mucho mayor en los pisos de 3 BHK que en los de 1 BHK, ¿qué nos indica esto sobre la homogeneidad del producto?
+
+Supondría que las viviendas no son demasiado parecidas entre sí. Aunque faltan datos, podríamos suponer que incluso cuando el número de habitaciones no varía demasiados, quizá hay otras calidades, materiales de construcción, infraestructura alrededor del inmueble, comodidades, etc, que pueden hacer que estos pisos se encarezcan mucho más. Por lo que podríamos deducir que en el dataset hay datos muy variados y poco similares.
+
+#### B. Confiabilidad del precio promedio
+
+**Pregunta:** Basándote en lo anterior, ¿en qué segmento (1 BHK o 3 BHK) dirías que el “Precio Promedio” es un indicador más fiable del valor real de una propiedad? Es decir, si tuvieras que tasar una propiedad “a ciegas” usando solo el promedio del mercado, ¿en qué tipo de apartamento tendrías más riesgo de equivocarte drásticamente por exceso o por defecto?
+
+Sería más sencillo fijarse en las de `1 BHK` porque la media es de `42.372,88` y la desviación estándar es de `32.255,95`. Esto quiere decir que el `68%` precio de las casas sube o baja `32.255`, por lo que hay mucho menos riesgo de equivocarse.
+
+En el caso de las `3 BHK` la media es de `159.792.60` y la desviación estándar es de `102.307.33`. Esto implica que, al igual que en el caso anterior, el `68%` precio de las casas sube o baja del precio de la media el valor de la desviación estándar.
+
+#### C. Detección de anomalías de mercado
+
+**Pregunta:** ¿Qué segmento tiene una curtosis más alta (colas más pesadas)?
+
+El segmento de `1 BHK` (`4.03`).
+
+**Pregunta:** Si el segmento de 3 BHK tiene una curtosis muy elevada, significa que existen propiedades con precios desorbitados que rompen la norma. ¿Consideras que estas “mansiones” representan la realidad del barrio, o son excepciones que deberían analizarse en un estudio de mercado aparte para no distorsionar la visión general?
+
+Probablemente sean excepciones que elevan la kurtosis y haría falta más estudio para no meter valores extremos en el estudio/modelo. De todos modos, en el ejemplo, el segmento de `3 BHK` tiene una kurtosis relativamente menos elevada que en el caso anterior (`1.48`). Claramente existen estos valores extremos, pero son datos manejables y no son tan extremos con el caso del segmento `1 BHK`.
