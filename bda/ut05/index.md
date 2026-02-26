@@ -6,5 +6,6 @@
 4. [PR0504 - Limpieza de datos sobre dataset de lugares famosos](./pr0504/PR0504-LimpiezaDatosLugaresFamosos.md)
 5. [PR0504B - Limpieza de datos sobre dataset de lugares famosos](./pr0504b/PR0504B-LimpiezaDatosCyl.md)
 6. [PR0505 - Análisis de estadísticas en dataset](./pr0505/PR0505-AnalisisEstadisticoDataset.md)
+7. [PR0506 - Análisis de comportamiento de usuarios en Netflix](./pr0506/PR0506-AnalisisUsuariosNetflix.md)
 
 [Volver](../index.md)
