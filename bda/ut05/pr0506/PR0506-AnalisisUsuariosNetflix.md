@@ -64,7 +64,16 @@ df = load_dataset(spark)
 df.show(3)
 ```
 
+    Setting default log level to "WARN".
+    To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+    26/03/04 11:05:50 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+
+
     SparkSession inciada correctamente.
+
+
+                                                                                    
+
     +------+-------------------+--------+--------------------+--------------------+-------------------+----------+----------+
     |row_id|     click_datetime|duration|               title|              genres|       release_date|  movie_id|   user_id|
     +------+-------------------+--------+--------------------+--------------------+-------------------+----------+----------+
@@ -93,7 +102,7 @@ df = (df
 df.select("user_id", "duration", "calculated_time_to_next").show(15)
 ```
 
-    [Stage 23:==============>                                           (2 + 6) / 8]
+    [Stage 3:>                                                          (0 + 1) / 1]
 
     +----------+--------+-----------------------+
     |   user_id|duration|calculated_time_to_next|
@@ -134,7 +143,8 @@ df = (df
 df.select("user_id", "calculated_time_to_next", "es_zapping").show(5)
 ```
 
-    [Stage 32:=====================>                                    (3 + 5) / 8]
+    26/03/04 11:06:11 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
+    [Stage 4:==============>                                            (2 + 6) / 8]
 
     +----------+-----------------------+----------+
     |   user_id|calculated_time_to_next|es_zapping|
@@ -151,7 +161,78 @@ df.select("user_id", "calculated_time_to_next", "es_zapping").show(5)
 
                                                                                     
 
+## 3.- El ranking de "maratones"
+
 
 ```python
+ventana = (Window
+           .partitionBy("user_id").orderBy("click_datetime")
+          )
 
+df_maratones = (df
+                .withColumn(
+                    "pelicula", f.row_number().over(ventana)
+                )
+)
+
+df_maratones.select("user_id", "title", "movie_id", "pelicula").show(5)
 ```
+
+    [Stage 13:=====================>                                    (3 + 5) / 8]
+
+    +----------+--------------------+----------+--------+
+    |   user_id|               title|  movie_id|pelicula|
+    +----------+--------------------+----------+--------+
+    |0006ea6b5c|                XOXO|7369676dec|       1|
+    |0006ea6b5c|            Hot Fuzz|6467fee6b6|       2|
+    |0006ea6b5c|         War Machine|0f3b137f4e|       3|
+    |0006ea6b5c|          Apocalypto|40dd7bf1f9|       4|
+    |0006ea6b5c|Joshua: Teenager ...|4a138aeefc|       5|
+    +----------+--------------------+----------+--------+
+    only showing top 5 rows
+    
+
+
+                                                                                    
+
+## 4.- Análisis de re-visualización
+
+
+```python
+ventana = (Window.partitionBy("user_id"))
+
+# las comparaciones del when tienen que ir entre paréntesis para que el & funcione 
+
+df = (df
+    .withColumn("veces_vista_por_usuario", 
+                f.when((f.year("click_datetime") >= 2017) & (f.year("click_datetime") <= 2019),
+                    f.count("movie_id").over(ventana)
+                      )
+                .otherwise(0)
+               )
+)
+
+df.filter(df.veces_vista_por_usuario > 3).select("user_id", "title", "movie_id", "veces_vista_por_usuario").show(10)
+```
+
+    [Stage 36:=======>                                                  (1 + 7) / 8]
+
+    +----------+--------------------+----------+-----------------------+
+    |   user_id|               title|  movie_id|veces_vista_por_usuario|
+    +----------+--------------------+----------+-----------------------+
+    |0006ea6b5c|                XOXO|7369676dec|                     15|
+    |0006ea6b5c|            Hot Fuzz|6467fee6b6|                     15|
+    |0006ea6b5c|          Apocalypto|40dd7bf1f9|                     15|
+    |0006ea6b5c|         War Machine|0f3b137f4e|                     15|
+    |0006ea6b5c|Joshua: Teenager ...|4a138aeefc|                     15|
+    |0006ea6b5c|Stranger than Fic...|73183024a6|                     15|
+    |0006ea6b5c|         Lucid Dream|27b44a3183|                     15|
+    |0006ea6b5c|        Dragon Blade|ed515d444e|                     15|
+    |0006ea6b5c|Handsome: A Netfl...|9f2550ca52|                     15|
+    |0006ea6b5c|        Dragon Blade|ed515d444e|                     15|
+    +----------+--------------------+----------+-----------------------+
+    only showing top 10 rows
+    
+
+
+                                                                                    
