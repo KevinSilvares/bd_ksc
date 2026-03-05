@@ -76,7 +76,7 @@ df.show(3)
 
     Setting default log level to "WARN".
     To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-    26/03/05 09:37:10 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+    26/03/05 10:12:45 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 
 
     SparkSession inciada correctamente.
@@ -104,7 +104,8 @@ print(f"Entrenamiento: {train.count()}")
 print(f"Test: {test.count()}")
 ```
 
-                                                                                    
+    26/03/05 10:12:58 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
+
 
     Entrenamiento: 8078
     Test: 1921
@@ -114,7 +115,7 @@ print(f"Test: {test.count()}")
 
 
 ```python
-# userCol, itemCol, ratingCol | coldStartStragey
+# userCol, itemCol, ratingCol | coldStartStrategy
 als = ALS(
     # maxIter = 0,
     # regParam = 1.5,
@@ -149,10 +150,49 @@ modelo = validador_cruzado.fit(df)
 print("Modelo entrenado.")
 ```
 
-    26/03/05 09:37:28 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
                                                                                     
 
     Modelo entrenado.
+
+
+
+```python
+combinaciones = modelo.getEstimatorParamMaps()
+notas_rmse = modelo.avgMetrics
+ranking = sorted(zip(notas_rmse, combinaciones), key = lambda x: x[0])
+
+print("Parámetros:")
+for nota, parametros in ranking:
+    print(f"RMSE: {nota}")
+    for parametro, valor in param.items():
+        print(f"{parametro.name}: {valor}")
+```
+
+    Parámetros:
+    RMSE: 1.2205219749953147
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
+    RMSE: 1.2227620687877347
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
+    RMSE: 1.2676855463819219
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
+    RMSE: 1.4621426100430899
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
+    RMSE: 1.4694372403927751
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
+    RMSE: 1.5210754868824916
+    rank: 15
+    regParam: 0.1
+    maxIter: 10
 
 
 ## 4.- Puesta en Producción
@@ -190,3 +230,8 @@ user_ratings.show(15)
     only showing top 15 rows
     
 
+
+
+```python
+spark.stop()
+```

@@ -66,12 +66,14 @@ df.show(3)
 
     Setting default log level to "WARN".
     To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-    26/03/04 11:05:50 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+    26/03/05 09:58:42 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+    26/03/05 09:58:44 WARN Utils: Service 'SparkUI' could not bind on port 4040. Attempting port 4041.
 
 
     SparkSession inciada correctamente.
 
 
+    26/03/05 09:58:55 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
                                                                                     
 
     +------+-------------------+--------+--------------------+--------------------+-------------------+----------+----------+
@@ -92,7 +94,7 @@ df.show(3)
 click_window = (Window
                 .partitionBy("user_id").orderBy("click_datetime")
 )
-
+# f.unix_timestamp(click_datetime)
 df = (df
       .withColumn("calculated_time_to_next", 
                   (f.lead("click_datetime", 1).over(click_window).cast("long") - col("click_datetime").cast("long"))
@@ -143,8 +145,7 @@ df = (df
 df.select("user_id", "calculated_time_to_next", "es_zapping").show(5)
 ```
 
-    26/03/04 11:06:11 WARN GarbageCollectionMetrics: To enable non-built-in garbage collector(s) List(G1 Concurrent GC), users should configure it(them) to spark.eventLog.gcMetrics.youngGenerationGarbageCollectors or spark.eventLog.gcMetrics.oldGenerationGarbageCollectors
-    [Stage 4:==============>                                            (2 + 6) / 8]
+    [Stage 4:=======>                                                   (1 + 7) / 8]
 
     +----------+-----------------------+----------+
     |   user_id|calculated_time_to_next|es_zapping|
@@ -165,31 +166,47 @@ df.select("user_id", "calculated_time_to_next", "es_zapping").show(5)
 
 
 ```python
+df = df.withColumn("date", f.to_date("click_datetime"))
+
 ventana = (Window
-           .partitionBy("user_id").orderBy("click_datetime")
+           .partitionBy("user_id", "date").orderBy("click_datetime")
           )
 
-df_maratones = (df
-                .withColumn(
-                    "pelicula", f.row_number().over(ventana)
-                )
-)
+df = df.withColumn("pelicula_num", f.row_number().over(ventana))
 
-df_maratones.select("user_id", "title", "movie_id", "pelicula").show(5)
+(df
+ .groupBy("user_id", "date")
+ .agg(f.max("pelicula_num").alias("total_peliculas"))
+).orderBy("total_peliculas", ascending = False).show()
 ```
 
-    [Stage 13:=====================>                                    (3 + 5) / 8]
+    [Stage 9:>                                                          (0 + 8) / 8]
 
-    +----------+--------------------+----------+--------+
-    |   user_id|               title|  movie_id|pelicula|
-    +----------+--------------------+----------+--------+
-    |0006ea6b5c|                XOXO|7369676dec|       1|
-    |0006ea6b5c|            Hot Fuzz|6467fee6b6|       2|
-    |0006ea6b5c|         War Machine|0f3b137f4e|       3|
-    |0006ea6b5c|          Apocalypto|40dd7bf1f9|       4|
-    |0006ea6b5c|Joshua: Teenager ...|4a138aeefc|       5|
-    +----------+--------------------+----------+--------+
-    only showing top 5 rows
+    +----------+----------+---------------+
+    |   user_id|      date|total_peliculas|
+    +----------+----------+---------------+
+    |23c52f9b50|2019-01-21|             64|
+    |59416738c3|2017-02-21|             54|
+    |3675d9ba4a|2018-11-26|             44|
+    |b15926c011|2018-03-24|             42|
+    |b090d94e51|2017-05-01|             40|
+    |423d95651d|2019-05-04|             38|
+    |fa48fa50ae|2018-12-22|             38|
+    |16d994f6dd|2017-11-11|             37|
+    |b15926c011|2018-05-13|             36|
+    |b15926c011|2018-04-15|             36|
+    |779343a3ea|2018-06-17|             34|
+    |f0d52ca74c|2018-03-30|             34|
+    |b15926c011|2018-05-06|             33|
+    |779343a3ea|2018-05-26|             32|
+    |6924354498|2017-11-05|             31|
+    |da01959c0b|2019-03-21|             31|
+    |5495affecb|2017-09-09|             29|
+    |f98c8ca112|2017-09-06|             29|
+    |da01959c0b|2019-03-12|             29|
+    |ae77c5157f|2017-02-21|             29|
+    +----------+----------+---------------+
+    only showing top 20 rows
     
 
 
@@ -199,40 +216,60 @@ df_maratones.select("user_id", "title", "movie_id", "pelicula").show(5)
 
 
 ```python
-ventana = (Window.partitionBy("user_id"))
+ventana = (Window.partitionBy("user_id", "title"))
 
 # las comparaciones del when tienen que ir entre paréntesis para que el & funcione 
 
 df = (df
-    .withColumn("veces_vista_por_usuario", 
-                f.when((f.year("click_datetime") >= 2017) & (f.year("click_datetime") <= 2019),
-                    f.count("movie_id").over(ventana)
-                      )
-                .otherwise(0)
-               )
+     .withColumn("veces_vista_por_usuario", 
+                 f.count("title").over(ventana)
+                )
+     )
+
+df_reviews = (df
+    .filter(col("veces_vista_por_usuario") >= 3)
+    .orderBy("veces_vista_por_usuario", ascending = False)
+    .select("user_id", "title", "movie_id", "veces_vista_por_usuario")
+    .distinct()
 )
 
-df.filter(df.veces_vista_por_usuario > 3).select("user_id", "title", "movie_id", "veces_vista_por_usuario").show(10)
+df_reviews.show(10)
+
+# df = (df
+#     .withColumn("veces_vista_por_usuario", 
+#                 f.when((f.year("click_datetime") >= 2017) & (f.year("click_datetime") <= 2019),
+#                     f.count("movie_id").over(ventana)
+#                       )
+#                 .otherwise(0)
+#                )
+# )
+
+# df.filter(df.veces_vista_por_usuario > 3).select("user_id", "title", "movie_id", "veces_vista_por_usuario").show(10)
 ```
 
-    [Stage 36:=======>                                                  (1 + 7) / 8]
+    [Stage 13:=============================>                            (4 + 4) / 8]
 
     +----------+--------------------+----------+-----------------------+
     |   user_id|               title|  movie_id|veces_vista_por_usuario|
     +----------+--------------------+----------+-----------------------+
-    |0006ea6b5c|                XOXO|7369676dec|                     15|
-    |0006ea6b5c|            Hot Fuzz|6467fee6b6|                     15|
-    |0006ea6b5c|          Apocalypto|40dd7bf1f9|                     15|
-    |0006ea6b5c|         War Machine|0f3b137f4e|                     15|
-    |0006ea6b5c|Joshua: Teenager ...|4a138aeefc|                     15|
-    |0006ea6b5c|Stranger than Fic...|73183024a6|                     15|
-    |0006ea6b5c|         Lucid Dream|27b44a3183|                     15|
-    |0006ea6b5c|        Dragon Blade|ed515d444e|                     15|
-    |0006ea6b5c|Handsome: A Netfl...|9f2550ca52|                     15|
-    |0006ea6b5c|        Dragon Blade|ed515d444e|                     15|
+    |000052a0a0|              Looper|4718f9963c|                      9|
+    |0012a95d5f|           Footloose|91e826cb17|                      3|
+    |0016c962c8|          Iron Man 3|afab92c7a7|                      4|
+    |0023e9b95e|Black Mirror: Ban...|e847f14da5|                      3|
+    |00305e5c73|                Lion|ea4d08cf70|                      4|
+    |004ad258d2|              Carrie|0b4c284ea9|                      4|
+    |004ad258d2|              Carrie|6f8ac8a090|                      4|
+    |004e33f215|             Detroit|c2bee3b484|                      3|
+    |004e33f215|   Hitler - A Career|fd68f2e667|                      4|
+    |004e33f215|The Legend of Coc...|3395cdc07c|                      3|
     +----------+--------------------+----------+-----------------------+
     only showing top 10 rows
     
 
 
                                                                                     
+
+
+```python
+spark.stop()
+```
