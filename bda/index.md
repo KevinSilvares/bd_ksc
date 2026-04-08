@@ -5,5 +5,6 @@
 3. [UT03: Gestión del clúster con Yarn](index.md)
 4. [UT04: Procesamiento distribuido con MapReduce](./ut04/index.md)
 5. [UT05: Procesamiento distribuido con PySpark](./ut05/index.md)
+6. [UT06: Almacenamiento distribuido con s3](./ut06/index.md)
 
 [Volver](../index.md)
