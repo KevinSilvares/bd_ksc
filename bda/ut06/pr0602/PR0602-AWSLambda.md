@@ -197,3 +197,72 @@ print("Mensaje enviado.")
 ## Ejercicio 6
 
 Crea una función Lambda que se ejecute todos los días a las 08:40 h que muestre el mensaje `Bienvenido a un nuevo día de clase`.
+
+Función:
+```python
+import json
+
+def lambda_handler(event, context):
+    print("Bienvenido a un nuevo día de clase")
+```
+
+![{97088E10-E636-4D90-B108-2184ECC6D5F5}.png](38e94fe8-c124-406a-a8bb-b0c9c473ffdb.png)
+
+## Ejercicio 7
+
+Crea una función Lambda que se ejecute todos los días y que imprima el número de archivos que hay en un bucket (puedes usar algún bucket que tengas creado por ahí). Recuerda que para obtener el listado de archivos de un bucket debes usar la función `list_objects_v2`.
+
+Función:
+```python
+import boto3
+import json
+
+def lambda_handler(event, context):
+    try:
+        s3 = boto3.client("s3")
+        print("Conexión establecida.")
+    except Exception as e:
+        print("Error de conexión.")
+        print(e)
+
+    print(f"Hay {len(s3.list_objects_v2(Bucket = "capa-bronce-amazon-ksc"))} objetos en el bucket.")
+```
+
+![{AE4BFB93-5ECF-4904-A448-EA46E6BEBD60}.png](1108629f-f166-44da-bd55-2842c002639a.png)
+
+## Ejercicio 8
+
+Vamos a convertir la función Lambda del primer ejercicio en un productor de mensajes. La idea es que, cada vez que se suba un archivo a S3 ejecute esta función, la cual extraerá los datos que queremos del archivo y los enviará en un mensaje a una cola.
+
+Las tareas que tienes que realizar son:
+
+- Crear la Cola (SQS): crea una cola estándar llamada `ColaDeProcesamiento`.
+- Modificar la función Lambda: crea una Lambda que capture el nombre y el tamaño del archivo, la función debe enviar un mensaje a la cola SQS con el siguiente formato de texto: `Archivo registrado: {nombre_archivo} | Tamaño: {tamaño_en_kb} KB`
+- Prueba de integración: sube un archivo al bucket de S3. Esto disparará la Lambda, la cual enviará el mensaje a la cola.
+- Verificación en SQS: ve a la consola de SQS, selecciona tu cola y pulsa en Enviar y recibir mensajes y verifica que el mensaje con los datos correctos ha llegado al buzón.
+
+
+
+```python
+d = {"col1": [1, 2], "col2": [3, 4]}
+df = pd.DataFrame(data = d)
+
+df.to_csv("df_prueba.csv")
+
+s3 = conectar_s3()
+subir_datos(s3, BUCKET, "pruebas/prueba.csv", "df_prueba.csv")
+```
+
+    Conexión establecida.
+    Dataframe subido con éxito a s3://capa-bronce-amazon-ksc/pruebas/prueba.csv
+
+
+Función:
+```python
+import json
+
+def lambda_handler(event, context):
+    print(f"Archivo registrado: {event['Records'][0]['s3']['object']['key']} | Tamaño: {event['Records'][0]['s3']['object']['size']} KB.")
+```
+
+![{53C1287F-4277-4E47-958E-D46B75F0F2E1}.png](5fd7862b-3219-4f23-aed8-e3d91dcbbdc9.png)
