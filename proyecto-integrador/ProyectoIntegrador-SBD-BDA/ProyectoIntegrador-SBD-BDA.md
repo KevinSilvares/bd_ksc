@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Proyecto Integrador: Predictor de demanda para redes eléctricas
 
 ## Comprensión del negocio
